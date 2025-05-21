@@ -1,0 +1,16 @@
+name: Capstone-Microsoft
+channels:
+  - conda-forge
+dependencies:
+  - python=3.9
+  - pip
+  - typer
+  - loguru
+  - tqdm
+  - black
+  - flake8
+  - isort
+  - pip:
+    - python-dotenv
+    - mkdocs
+    - -e .
