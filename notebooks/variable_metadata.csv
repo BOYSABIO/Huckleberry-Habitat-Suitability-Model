@@ -1,0 +1,93 @@
+Variable,Long Name,Units,Simplified Description
+air_temperature,tmmn,K,"The ""air_temperature"" variable! This is a pretty straightforward one.
+
+""Air temperature"" simply refers to how warm or cool the air is. It's measured in Kelvin (K), which is a scale that starts at absolute zero (-273°C) and goes up from there. So, if you saw a value like 22 K, it would be equivalent to -251°C, which is very cold!
+
+In simpler terms, air temperature is like how hot or cool your day feels outside. For example:
+
+* A warm day might have an air temperature of around 25-30°C (or 298-303 K).
+* A chilly morning might have an air temperature of around 5-10°C (or 278-283 K).
+* And a super cold winter night might have an air temperature as low as -20°C (or 253 K).
+
+So, in short, ""air_temperature"" is just the measure of how hot or cold the air is!"
+burning_index_g,bi,Unitless,"The ""burning_index_g"" variable!
+
+In simple terms, it measures how well something burns (or combusts). The ""g"" stands for ""gas"", which refers to the combustion process.
+
+Think of it like a fire's temperance - a high ""burning_index_g"" means the material is more prone to burning vigorously and intensely, while a low value indicates it's less likely to catch fire or burn smoothly."
+dead_fuel_moisture_1000hr,fm1000,Percent,"The variable ""dead_fuel_moisture_1000hr""!
+
+In simple terms, this variable represents the percentage of moisture that would remain in dead plant material (like leaves and twigs) after 1,000 hours at a certain temperature.
+
+Think of it like this: when plants die, they can still absorb water from the air. But over time, as the environment gets drier or warmer, the moisture inside these dead plant parts decreases. This variable measures how much moisture remains in these ""dead fuels"" after 1,000 hours have passed (imagine a really long day!).
+
+So, if you had a piece of dead leaf with an fm1000 value of 20%, it would still hold about 20% of its original moisture content after those 1,000 hours. This information is important in understanding how easily these dead fuels could ignite or burn under different environmental conditions!"
+dead_fuel_moisture_100hr,fm100,Percent,"'dead_fuel_moisture_100hr' is a fancy way to say ""the percentage of water that's stuck inside dead plant material (like logs, twigs, and needles) after 100 hours have passed"".
+
+Think of it like this: Imagine you took a bunch of dry leaves and sticks outside on a humid day. After some time passes, the air would start to fill those dry plant bits with moisture from the surrounding environment. 'dead_fuel_moisture_100hr' is measuring how much water has accumulated in those dead plants after 100 hours (or roughly 4-5 days) have gone by.
+
+So, a higher value for 'dead_fuel_moisture_100hr' means there's more moisture stuck inside the dead plant material, while a lower value means it's still quite dry."
+mean_vapor_pressure_deficit,vpd,kPa,"'Mean Vapor Pressure Deficit' (or just 'Vapor Pressure Deficit', abbreviated as VPD) is a measure of how much moisture is missing from the air.
+
+Imagine you're standing outside on a hot summer day, and the air feels dry and uncomfortable. That's basically what 'VPD' measures - the difference between how much water vapor the air can hold (its 'vapor pressure') and how much actual water vapor is actually present in the air.
+
+In other words, VPD is like the ""dryness"" of the air. If it's high, that means the air is very dry, and if it's low, the air is relatively humid. The units are usually measured in kilopascals (kPa), with higher values indicating more dryness and lower values indicating more humidity.
+
+So, 'mean vapor pressure deficit' specifically refers to the average amount of moisture missing from the air over a certain period or area - giving you an idea of how consistently dry or humid the environment is."
+potential_evapotranspiration,pet,mm,"So, ""potential evapotranspiration"" (or PET) is a measure of how much water could potentially be evaporated from the Earth's surface if it were hot enough and dry enough to do so.
+
+Think of it like this: imagine you're in a super-hot desert, and all the plants are parched and thirsty. In that scenario, the air would be able to suck up as much water as possible from the soil, leaves, and other surfaces. That's kind of what PET measures - how much water could theoretically be ""evaporated"" (or taken away) in a given area under those super-hot conditions.
+
+In simple terms, PET represents the maximum amount of water that could be lost through evaporation, usually measured in units like millimeters (mm). It's a key concept in understanding water cycles and how plants interact with their environments!
+
+Does that make sense?"
+precipitation_amount,pr,mm,"The variable ""precipitation_amount"" is a measure of how much water falls from the sky to the ground.
+
+Think of it like this: when it rains, snows, or hails, some of that water lands on your yard, sidewalk, or even your car! The ""precipitation_amount"" tells you exactly how many millimeters (or mm) of that water fell. So, if it rained 20 mm yesterday, that means 20 tiny drops of rain landed on the ground!
+
+In simple terms, ""precipitation_amount"" is like a measurement of the amount of liquid gold (rain, snow, or hail!) that falls from the sky to the earth."
+relative_humidity,rmin,%,"`relative_humidity` is a measure of how much moisture is in the air compared to how much it could hold at its current temperature.
+
+Think of it like a cup that can hold a certain amount of water (air's capacity to hold moisture). If the cup is half full, it means there's some water in it. But if you were to fill it up to its maximum capacity, it would be fully saturated.
+
+`relative_humidity` tells us what percentage of that maximum capacity is currently being used. For example, a value of 60% means the air is ""half-way"" full of moisture - it's not too wet or too dry.
+
+So, in simple terms, `relative_humidity` shows how humid or dry the air is, expressed as a percentage!"
+specific_humidity,sph,kg/kg,"The variable ""specific_humidity"" (or sph) is a measure of how much water vapor is present in the air.
+
+Think of it like this: when you breathe out onto a cold windowpane, you can see your breath because there's moisture in the air. The specific humidity is like measuring how many puffs of breath you'd need to fill up that entire windowpane with just your breath alone!
+
+In scientific terms, specific humidity is defined as the ratio of water vapor mass to total air mass, usually expressed in units of kg/kg or grams per kilogram (g/kg). So, if the specific humidity is 0.01 kg/kg, it means that for every kilogram of air, there's about 1 gram of water vapor mixed in.
+
+In simple terms, a higher specific humidity means more moisture is present in the air, which can affect weather patterns and climate conditions."
+surface_downwelling_shortwave_flux_in_air,srad,W m-2,"Let's break it down!
+
+The variable `surface_downwelling_shortwave_flux_in_air` might sound like a mouthful, but I'm here to simplify it.
+
+**What does ""shortwave"" mean?**
+
+In this context, ""shortwave"" refers to the visible part of the solar spectrum (like sunlight) that is not absorbed by the Earth's atmosphere. Think of it as the direct sunlight that reaches our planet.
+
+**What about ""downwelling""?**
+
+""Downwelling"" means that the energy or radiation is coming from above and being directed towards a surface. Imagine water flowing downstream – in this case, the shortwave radiation (sunlight) is flowing down to the Earth's surface.
+
+**Now, let's combine it: ""surface_downwelling_shortwave_flux_in_air""**
+
+In simple terms, `surface_downwelling_shortwave_flux_in_air` represents the amount of direct sunlight that reaches the Earth's surface from above. It's like measuring how much sunshine is falling on your face when you're outside on a sunny day!
+
+The units are usually expressed in Watts per square meter (W m-2) or, more commonly, as ""srad"" (shortwave radiation). This variable helps scientists understand and model the interactions between the Earth's surface and the atmosphere, which is crucial for climate research."
+wind_from_direction,th,Degrees Clockwise from north,"So, ""wind_from_direction"" is a fancy way of saying... which direction is the wind blowing?
+
+Think about it like this: if you're standing outside and feeling the breeze on your face, you can point to where the wind is coming from. That's basically what ""wind_from_direction"" measures!
+
+It's like drawing an imaginary line from north (0 degrees) to wherever the wind is actually coming from. For example, if the wind is blowing directly from due east (90 degrees), then that's what ""wind_from_direction"" would report.
+
+So, in simple terms, ""wind_from_direction"" tells you which direction the wind is blowing, measured in degrees clockwise from north."
+wind_speed,vs,m/s,"So, ""wind_speed"" (or ""vs"") is a measure of how fast the wind is blowing!
+
+Think of it like the speedometer on your car. Just as your car's speedometer shows how fast you're moving, ""wind_speed"" measures how quickly the air around us is moving.
+
+In units like meters per second (m/s), ""wind_speed"" would tell you things like: ""The wind is blowing at a rate of 5 meters per second."" That means if you were standing outside and didn't have any shelter, you'd feel a gentle breeze carrying objects away from the source at a pace of about 18 kilometers per hour (because 1 meter is equal to 3.6 feet, so we can convert m/s to km/h easily!).
+
+So, in short, ""wind_speed"" (or ""vs"") represents how fast the air around us is moving!"
