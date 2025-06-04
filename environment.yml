@@ -10,6 +10,10 @@ dependencies:
   - black
   - flake8
   - isort
+  - xarray
+  - rioxarray
+  - planetary-computer
+  - stackstac
   - pip:
     - python-dotenv
     - mkdocs
