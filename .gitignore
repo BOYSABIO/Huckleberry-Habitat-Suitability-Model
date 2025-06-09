@@ -50,6 +50,7 @@ models/*
 !models/.gitkeep
 
 docs/notes/
+archive/
 
 # Logs and databases
 *.log
