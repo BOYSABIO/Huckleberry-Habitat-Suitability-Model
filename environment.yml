@@ -1,19 +1,22 @@
 name: Capstone-Microsoft
 channels:
   - conda-forge
+  - defaults
 dependencies:
   - python=3.9
   - pip
-  - typer
-  - loguru
-  - tqdm
   - black
   - flake8
   - isort
-  - xarray
-  - rioxarray
+  - loguru
+  - numpy
+  - pandas
   - planetary-computer
+  - rioxarray
   - stackstac
+  - tqdm
+  - typer
+  - xarray
   - pip:
     - python-dotenv
     - mkdocs
