@@ -40,7 +40,7 @@ notebooks/.ipynb_checkpoints/
 
 # Project specific
 # Data directory
-data/raw/*
+data/raw/
 data/processed/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
