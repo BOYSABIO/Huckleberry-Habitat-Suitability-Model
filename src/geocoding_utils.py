@@ -33,8 +33,7 @@ Return just the name of the place. No explanations.
     try:
         response = ollama.chat(model=model, messages=[{"role": "user", "content": prompt}])
         return response['message']['content'].strip()
-    except Exception as e:
-        print(f"Error in landmark extraction: {e}")
+    except Exception:
         return None
 
 
@@ -53,7 +52,6 @@ def geocode_with_llm_fallback(row, geocode):
         if pd.notnull(row['locality']):
             landmark = extract_landmark_ollama(row['locality'])
             if landmark:
-                print(f"Extracted landmark: {landmark}")
                 fallback_string = ", ".join([landmark] + 
                     [str(row[f]) for f in ['county', 'stateProvince', 'countryCode'] 
                      if pd.notnull(row[f])])
@@ -61,21 +59,12 @@ def geocode_with_llm_fallback(row, geocode):
 
         # Try all attempts
         for attempt_type, location_str in attempts:
-            print(f"Trying {attempt_type}: {location_str}")
             try:
                 location = geocode(location_str)
                 if location:
-                    print(f"Success: {location.latitude}, {location.longitude}")
                     return pd.Series([location.latitude, location.longitude])
             except Exception as e:
-                print(f"Error in {attempt_type} attempt: {e}")
                 results.append((attempt_type, str(e)))
-
-        # If all attempts failed, log the failures
-        if results:
-            print(f"All attempts failed for row {row.name}:")
-            for attempt_type, error in results:
-                print(f"- {attempt_type}: {error}")
 
     return pd.Series([row['decimalLatitude'], row['decimalLongitude']])
 
@@ -189,10 +178,8 @@ def save_checkpoint(coordinates, current_index, output_file='geocoding_checkpoin
     try:
         with open(output_file, 'w') as f:
             json.dump(checkpoint, f)
-        print(f"Checkpoint saved to: {os.path.abspath(output_file)}")
-        print(f"Saved {len(coordinates)} coordinates up to index {current_index}")
-    except Exception as e:
-        print(f"Error saving checkpoint: {str(e)}")
+    except Exception:
+        pass
 
 
 def save_results_to_csv(missing_coords, coordinates, output_file='geocoding_results.csv'):
@@ -211,9 +198,8 @@ def save_results_to_csv(missing_coords, coordinates, output_file='geocoding_resu
         
         # Save to CSV
         results_df.to_csv(output_file, index=False)
-        print(f"Results saved to: {os.path.abspath(output_file)}")
-    except Exception as e:
-        print(f"Error saving results to CSV: {str(e)}")
+    except Exception:
+        pass
 
 
 def load_checkpoint(output_file='geocoding_checkpoint.json'):
@@ -222,59 +208,40 @@ def load_checkpoint(output_file='geocoding_checkpoint.json'):
         try:
             with open(output_file, 'r') as f:
                 checkpoint = json.load(f)
-            print(f"Loaded checkpoint with {len(checkpoint['coordinates'])} coordinates")
-            print(f"Last processed index: {checkpoint['current_index']}")
             return checkpoint
         except Exception as e:
-            print(f"Error loading checkpoint: {str(e)}")
+            return None
     return None
 
 
 def geocode_missing_coordinates(df, checkpoint_file='geocoding_checkpoint.json', results_file='geocoding_results.csv'):
     """
     Geocode addresses for rows missing coordinates using LLM-based landmark extraction.
-    
-    Args:
-        df (pandas.DataFrame): DataFrame containing location information
-        checkpoint_file (str): Path to the checkpoint file
-        results_file (str): Path to save the results CSV
-        
-    Returns:
-        pandas.DataFrame: DataFrame with new latitude and longitude columns
     """
-    # Print current working directory
-    print(f"Current working directory: {os.getcwd()}")
-    print(f"Checkpoint file will be saved to: {os.path.abspath(checkpoint_file)}")
-    print(f"Results file will be saved to: {os.path.abspath(results_file)}")
-    
     # Initialize geocoder
     geocode = init_geocoder()
     
     # Get rows without coordinates
     missing_coords = df[df['hasCoordinate'] == False].copy()
-    print(f"Found {len(missing_coords)} rows without coordinates")
     
     # Try to load checkpoint
     checkpoint = load_checkpoint(checkpoint_file)
     if checkpoint:
-        print(f"Found checkpoint at index {checkpoint['current_index']}")
         coordinates = checkpoint['coordinates']
-        start_idx = checkpoint['current_index'] + 1  # Start from the next row
-        print(f"Resuming from row {start_idx}")
+        start_idx = checkpoint['current_index'] + 1
     else:
-        print("No checkpoint found, starting from beginning")
         coordinates = []
         start_idx = 0
     
     # Geocode addresses (with progress bar)
-    print("Geocoding addresses...")
     success_count = 0
     error_count = 0
     
     try:
-        for idx, row in tqdm(missing_coords.iloc[start_idx:].iterrows(), total=len(missing_coords) - start_idx):
+        for idx, row in tqdm(missing_coords.iloc[start_idx:].iterrows(), 
+                           total=len(missing_coords) - start_idx,
+                           desc="Geocoding addresses"):
             try:
-                print(f"\nProcessing row {idx}:")
                 new_coords = geocode_with_llm_fallback(row, geocode)
                 
                 # Update the coordinates
@@ -289,45 +256,28 @@ def geocode_missing_coordinates(df, checkpoint_file='geocoding_checkpoint.json',
                 
                 # Save checkpoint and results every 10 rows
                 if (idx + 1) % 10 == 0:
-                    print(f"\nSaving checkpoint at row {idx + 1}...")
                     save_checkpoint(coordinates, idx, checkpoint_file)
                     save_results_to_csv(missing_coords.iloc[:idx+1], coordinates, results_file)
-                    print(f"\nProgress update:")
-                    print(f"Processed {idx + 1} rows")
-                    print(f"Successful: {success_count}")
-                    print(f"Failed: {error_count}")
                 
                 # Add a small delay between rows
                 time.sleep(1)
                 
             except Exception as e:
-                print(f"\nERROR processing row {idx}:")
-                print(f"Error message: {str(e)}")
                 error_count += 1
                 missing_coords.loc[idx, 'new_latitude'] = None
                 missing_coords.loc[idx, 'new_longitude'] = None
                 time.sleep(2)  # Longer delay after an error
         
         # Save final results
-        print("\nSaving final results...")
         save_results_to_csv(missing_coords, coordinates, results_file)
-        
-        # Print final statistics
-        print("\nFinal statistics:")
-        print(f"Total rows processed: {len(missing_coords)}")
-        print(f"Successfully geocoded: {success_count}")
-        print(f"Failed to geocode: {error_count}")
         
         # Remove checkpoint file if we completed successfully
         if os.path.exists(checkpoint_file):
             os.remove(checkpoint_file)
-            print(f"Removed checkpoint file: {checkpoint_file}")
         
         return missing_coords
         
     except Exception as e:
-        print(f"\nFatal error occurred: {str(e)}")
-        print("Progress has been saved. You can resume from the last checkpoint.")
         # Save results even if there's an error
         save_results_to_csv(missing_coords.iloc[:len(coordinates)], coordinates, results_file)
         return None

@@ -7,29 +7,28 @@ import logging
 from datetime import datetime
 import os
 
-# Set up logging
 def setup_logging():
     """Set up logging to file only, with no console output."""
-    # Create logs directory if it doesn't exist
-    if not os.path.exists('logs'):
-        os.makedirs('logs')
+    # Create logs directory in root if it doesn't exist
+    log_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'logs')
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
     
     # Create a timestamp for the log file
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    log_file = f'logs/geocoding_{timestamp}.log'
+    log_file = os.path.join(log_dir, f'geocoding_{timestamp}.log')
     
-    # Configure logging to file only, with no console output
+    # Configure logging to file only
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(levelname)s - %(message)s',
-        handlers=[
-            logging.FileHandler(log_file)
-        ],
-        force=True  # Override any existing logging configuration
+        handlers=[logging.FileHandler(log_file)],
+        force=True
     )
     
-    # Disable all logging output to console
-    logging.getLogger().handlers = [h for h in logging.getLogger().handlers if isinstance(h, logging.FileHandler)]
+    # Disable console output
+    logging.getLogger().handlers = [h for h in logging.getLogger().handlers 
+                                  if isinstance(h, logging.FileHandler)]
     
     return log_file
 
@@ -62,10 +61,7 @@ You would not pass "lake" and instead return "Rainey Pass" because we don't have
 Return just the name of the place. No explanations.
 """
     try:
-        response = ollama.chat(
-            model=model,
-            messages=[{"role": "user", "content": prompt}]
-        )
+        response = ollama.chat(model=model, messages=[{"role": "user", "content": prompt}])
         return response['message']['content'].strip()
     except Exception as e:
         logging.error(f"Error in landmark extraction: {e}")
@@ -100,7 +96,19 @@ def geocode_with_llm_fallback(row, geocode):
                 county_state += f", {row['countryCode']}"
             attempts.append(("County-State", county_state))
 
-        # Strategy 4: LLM landmark extraction if we have locality
+        # Try all non-LLM attempts first
+        for attempt_type, location_str in attempts:
+            logging.info(f"Trying {attempt_type}: {location_str}")
+            try:
+                location = geocode(location_str)
+                if location:
+                    logging.info(f"Success: {location.latitude}, {location.longitude}")
+                    return pd.Series([location.latitude, location.longitude, False])
+            except Exception as e:
+                logging.error(f"Error in {attempt_type} attempt: {e}")
+                results.append((attempt_type, str(e)))
+
+        # Strategy 4: LLM landmark extraction as last resort
         if pd.notnull(row['locality']):
             landmark = extract_landmark_ollama(row['locality'])
             if landmark:
@@ -110,19 +118,15 @@ def geocode_with_llm_fallback(row, geocode):
                     if pd.notnull(row[f]):
                         fallback_parts.append(str(row[f]))
                 fallback_string = ", ".join(fallback_parts)
-                attempts.append(("Landmark", fallback_string))
-
-        # Try all attempts
-        for attempt_type, location_str in attempts:
-            logging.info(f"Trying {attempt_type}: {location_str}")
-            try:
-                location = geocode(location_str)
-                if location:
-                    logging.info(f"Success: {location.latitude}, {location.longitude}")
-                    return pd.Series([location.latitude, location.longitude, attempt_type == "Landmark"])
-            except Exception as e:
-                logging.error(f"Error in {attempt_type} attempt: {e}")
-                results.append((attempt_type, str(e)))
+                
+                try:
+                    location = geocode(fallback_string)
+                    if location:
+                        logging.info(f"LLM Success: {location.latitude}, {location.longitude}")
+                        return pd.Series([location.latitude, location.longitude, True])
+                except Exception as e:
+                    logging.error(f"Error in LLM attempt: {e}")
+                    results.append(("LLM", str(e)))
 
         # If all attempts failed, log the failures
         if results:
@@ -151,6 +155,9 @@ def process_dataset(df):
     # Make a copy of the dataframe
     df_updated = df.copy()
     
+    # Add column to track LLM usage
+    df_updated['used_llm'] = False
+    
     # Track statistics
     stats = {
         'total_rows': len(df),
@@ -164,11 +171,9 @@ def process_dataset(df):
     missing_mask = df['decimalLatitude'].isna() | df['decimalLongitude'].isna()
     stats['missing_coords'] = missing_mask.sum()
     
-    # Disable all output except progress bar
+    # Process rows with missing coordinates
     with tqdm(df[missing_mask].index, desc="Geocoding progress", leave=True) as pbar:
         for idx in pbar:
-            original_coords = (df.loc[idx, 'decimalLatitude'], 
-                             df.loc[idx, 'decimalLongitude'])
             new_coords = geocode_with_llm_fallback(df.loc[idx], geocode)
             
             # Update coordinates and LLM usage
@@ -184,7 +189,7 @@ def process_dataset(df):
             else:
                 stats['failed_updates'] += 1
     
-    # Log final statistics to file
+    # Log final statistics
     logging.info("\nGeocoding Statistics:")
     logging.info(f"Total rows processed: {stats['total_rows']}")
     logging.info(f"Rows with missing coordinates: {stats['missing_coords']}")
@@ -204,14 +209,4 @@ def process_dataset(df):
     print(f"Success rate: {success_rate:.2f}%")
     print(f"\nDetailed logs saved to: {log_file}")
     
-    return df_updated, stats
-
-def main():
-    """Main function to demonstrate usage."""
-    # Example usage
-    # df = pd.read_csv('your_data.csv')
-    # df_updated, stats = process_dataset(df)
-    pass
-
-if __name__ == "__main__":
-    main() 
+    return df_updated, stats 
