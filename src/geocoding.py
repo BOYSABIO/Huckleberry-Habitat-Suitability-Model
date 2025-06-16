@@ -46,17 +46,23 @@ From the following location description:
 
 "{text}"
 
-Extract the most specific, geocodable **natural feature** such as a lake, 
-mountain, river, or canyon — preferably **a lake if mentioned**. Return just 
-the name of the place that would most help identify the location on a map.
+Extract the most specific, geocodable location information. Follow these rules in order:
 
-If multiple are mentioned, choose the **most specific or closest landmark** 
-mentioned.
+1. If there's a distance-based location (e.g., "4 mi. E of Stevens Pass"), 
+   return the full distance-based location
+2. If there's a specific natural feature (lake, mountain, river, canyon), 
+   return its name
+3. If there's a National Forest or Park mentioned, return its full name
+4. If there's a mountain range mentioned, return its name
+5. If there's a regional district mentioned, return its name
+6. If multiple landmarks are mentioned, choose the most specific one
 
-If it is a **natural feature**, make sure you have the name of the natural feature as well.
-If not then choose the next best option.
-For example, if the location description is "Chelan Co., Mazama: Along rocky shore of Lake ca. 3 miles S of route 20 in Rainey Pass, Washington, US",
-You would not pass "lake" and instead return "Rainey Pass" because we don't have the name of the lake.
+For example:
+- "4 mi. E of Stevens Pass" -> "4 mi. E of Stevens Pass"
+- "Spanish Basin, Madison Range" -> "Spanish Basin"
+- "Near Lake Bootahnie, Marble Mountains" -> "Lake Bootahnie"
+- "Nez Perce Natl. For." -> "Nez Perce National Forest"
+- "Columbia-Shuswap Regional District" -> "Columbia-Shuswap Regional District"
 
 Return just the name of the place. No explanations.
 """
@@ -108,11 +114,23 @@ def geocode_with_llm_fallback(row, geocode):
                 logging.error(f"Error in {attempt_type} attempt: {e}")
                 results.append((attempt_type, str(e)))
 
-        # Strategy 4: LLM landmark extraction as last resort
+        # Strategy 4: Enhanced LLM landmark extraction as last resort
         if pd.notnull(row['locality']):
             landmark = extract_landmark_ollama(row['locality'])
             if landmark:
                 logging.info(f"Extracted landmark: {landmark}")
+                # Try the landmark alone first
+                try:
+                    location = geocode(landmark)
+                    if location:
+                        msg = f"LLM Success (landmark only): {location.latitude}, "
+                        msg += f"{location.longitude}"
+                        logging.info(msg)
+                        return pd.Series([location.latitude, location.longitude, True])
+                except Exception as e:
+                    logging.error(f"Error in LLM landmark-only attempt: {e}")
+                
+                # If landmark alone fails, try with additional context
                 fallback_parts = [landmark]
                 for f in ['county', 'stateProvince', 'countryCode']:
                     if pd.notnull(row[f]):
@@ -122,10 +140,12 @@ def geocode_with_llm_fallback(row, geocode):
                 try:
                     location = geocode(fallback_string)
                     if location:
-                        logging.info(f"LLM Success: {location.latitude}, {location.longitude}")
+                        msg = f"LLM Success (with context): {location.latitude}, "
+                        msg += f"{location.longitude}"
+                        logging.info(msg)
                         return pd.Series([location.latitude, location.longitude, True])
                 except Exception as e:
-                    logging.error(f"Error in LLM attempt: {e}")
+                    logging.error(f"Error in LLM attempt with context: {e}")
                     results.append(("LLM", str(e)))
 
         # If all attempts failed, log the failures
