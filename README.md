@@ -14,7 +14,7 @@ This project aims to analyze and predict huckleberry habitat suitability and pot
 ```
 
 ## Data Sources
-[GBIF.org (11 June 2025) GBIF Occurrence Download]("https://doi.org/10.15468/dl.jzaue9")  
+[Vaccinium membranaceum Douglas ex Hook Dataset]("https://www.gbif.org/species/9060377")  
 
 [Why Are Huckleberries Not Grown Commercially?](https://shuncy.com/article/why-are-huckleberries-not-grown-commercially)
 
