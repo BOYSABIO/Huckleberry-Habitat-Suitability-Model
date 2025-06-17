@@ -9,7 +9,7 @@ A step-by-step breakdown of the full pipeline from raw data to model deployment.
 
 ### 1. Clean GBIF Occurrence Data (`occurrence.txt`)
 - Load with `pandas.read_csv(..., sep='\t')`
-- Drop rows with missing or 0-coordinates
+- Drop or convert rows with missing or 0-coordinates
 - Keep rows with `basisOfRecord` in: `"HumanObservation"`, `"PreservedSpecimen"`
 - Convert `eventDate` to datetime or fallback to `year`
 - Filter to recent years: 2000–present (to match GridMET)
