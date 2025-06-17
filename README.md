@@ -50,9 +50,3 @@ This project aims to analyze and predict huckleberry habitat suitability and pot
 - scikit-learn
 - Additional dependencies listed in requirements.txt
 
-## Contributing
-Please read CONTRIBUTING.md for details on our code of conduct and the process for submitting pull requests.
-
-## License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
-
