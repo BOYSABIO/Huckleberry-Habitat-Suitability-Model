@@ -5205,29 +5205,23 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1944-08-16,,229.0,229.0,1944.0,8.0,16.0,,,,NORTH_AMERICA,US,Idaho,Bonner,N. fork Hunt Creek.,,,,,,48.564004,-116.829622,,,,,,True,False
 ,PRESENT,1943-06-19,,170.0,170.0,1943.0,6.0,19.0,,,,NORTH_AMERICA,US,Idaho,Bonner,Priest River Exptl. Forest.,,,,,,48.200171,-116.90305,,,,,,True,False
 ,PRESENT,1899-07-15,,196.0,196.0,1899.0,7.0,15.0,,,,,US,Idaho,Washington,Deer Lake,,,,,,,,,,,,,False,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,2007-07-01,,182.0,182.0,2007.0,7.0,1.0,,,,,US,Idaho,Bonner,"North of Priest Lake, Rd. 1041.",,,,,,,,,,,,,False,False
 ,PRESENT,1911-08-10,,222.0,222.0,1911.0,8.0,10.0,,,,,US,Idaho,Washington,Tamarack,,,,,,,,,,,,,False,False
 ,PRESENT,1899-07-15,,196.0,196.0,1899.0,7.0,15.0,,,,,US,Idaho,Washington,Deer Lake,,,,,,,,,,,,,False,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1943-06-19,,170.0,170.0,1943.0,6.0,19.0,,,,NORTH_AMERICA,US,Idaho,Bonner,Priest River Experimental Forest.,,,,,,48.200171,-116.90305,,,,,,True,False
 ,PRESENT,1914-07-02,,183.0,183.0,1914.0,7.0,2.0,,,,NORTH_AMERICA,US,Oregon,Lane,N. slope of Horse Pasture Mt.; 18 mi. SE. of McKenzie Bridge.,,,,,,44.1227,-122.0878,,,,,,True,False
 ,PRESENT,2005-07-09,,190.0,190.0,2005.0,7.0,9.0,,,,NORTH_AMERICA,US,Idaho,Clearwater,Clearwater National Forest. Hidden Creek Camp.,,,,,,47.67363,-115.364753,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1980-05-30,,151.0,151.0,1980.0,5.0,30.0,,,,,US,Idaho,Bonner,Priest Lake River Exp. Above road to Gisborne L. O.,,,,,,,,,,,,,False,False
 ,PRESENT,1935-10-21,,294.0,294.0,1935.0,10.0,21.0,,,,NORTH_AMERICA,US,Oregon,Lane,"Indian Ridge, South Fork McKenzie River, Cascade Nat. Forest.",,,,,,44.0094,-122.2578,,,,,,True,False
 ,PRESENT,2005-07-09,,190.0,190.0,2005.0,7.0,9.0,,,,NORTH_AMERICA,US,Idaho,Clearwater,"Clearwater National Forest, Hidden Creek Camp.",,,,,,46.830917,-115.180183,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1941-05-07,,127.0,127.0,1941.0,5.0,7.0,,,,NORTH_AMERICA,US,Idaho,Bonner,"4 miles west of Coolin, Dickensheet Crossing, Priest River.",,,,,,48.471137,-116.919949,,,,,,True,False
 ,PRESENT,1995-09-09,,252.0,252.0,1995.0,9.0,9.0,,,,NORTH_AMERICA,US,Oregon,Lane,about 0.25 mi. east of Alder Springs Campground on Highway 242.,,,,,,44.1772,-121.9077,,,,,,True,False
 ,PRESENT,2005-07-08,,189.0,189.0,2005.0,7.0,8.0,,,,NORTH_AMERICA,US,Idaho,Clearwater,Clearwater National Forest. Shute SE from Cold Springs Peak.,,,,,,46.786519,-115.304458,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1994-07-08,,189.0,189.0,1994.0,7.0,8.0,,,,NORTH_AMERICA,US,Idaho,Bonner,Priest Lake.  Beaver Campground trail leading to Plowboy Campground.,,,,,,48.666667,-116.816667,,,,,,True,False
 ,PRESENT,1953-07-23,,204.0,204.0,1953.0,7.0,23.0,,,,,US,Oregon,Marion,"One mile south of Olallie Lake, on north shore of Horseshoe Lake.",,,,,,,,,,,,,False,False
 ,PRESENT,1940-08-29,,242.0,242.0,1940.0,8.0,29.0,,,,NORTH_AMERICA,US,Oregon,Lane,Three Sisters Wilderness; below Sunshine Shelter on Obsidian Trail.,,,,,,44.1613,-121.8901,,,,,,True,False
 ,PRESENT,1971-07-20,,201.0,201.0,1971.0,7.0,20.0,,,,NORTH_AMERICA,US,Idaho,Bonneville,"Caribou Range, Hoffman Campground, overlooking Palisades Reservoir, 12.5 airline miles south-southeast of the dam.",,,,,,43.174,-111.087,,,,,,True,False
 ,PRESENT,1932-06-19,,171.0,171.0,1932.0,6.0,19.0,,,,NORTH_AMERICA,US,Washington,Yakima,Signal Peak.,,,,,,46.22722,-121.13611,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1963-08-21,,233.0,233.0,1963.0,8.0,21.0,,,,,US,Montana,Ravalli,Bitterroot Forest. Near Rye Creek - Sleeping Child Creek Divide; 13.5 miles east of Darby.,,,,,,,,,,,,,False,False
 ,PRESENT,1917-08-24,,236.0,236.0,1917.0,8.0,24.0,,,,,US,Oregon,Harney,Steens Mountain,,,,,,,,,,,,,False,False
 ,PRESENT,1935-06-16,,167.0,167.0,1935.0,6.0,16.0,,,,NORTH_AMERICA,US,Oregon,Lane,"1-2 miles southwest of Frog Camp on the McKenzie River Highway, near the turnoff.",,,,,,44.1876,-121.8907,,,,,,True,False
@@ -5236,7 +5230,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1893-08-09,,221.0,221.0,1893.0,8.0,9.0,,,,NORTH_AMERICA,US,Oregon,,Mt. Hood.,,,,,,45.3688,-121.6978,,,,,,True,False
 ,PRESENT,2002-07-13,,194.0,194.0,2002.0,7.0,13.0,,,,NORTH_AMERICA,US,Washington,Whatcom,Ross Lake National Recreation Area; Desolation Peak; about 100 meters south of established camps on Desolation Ridge.,,,,,,48.901553,-121.008936,,,,,,True,False
 ,PRESENT,1885-06-29,,180.0,180.0,1885.0,6.0,29.0,,,,NORTH_AMERICA,US,Washington,Yakima,Mount Adams.,,,,,,46.2143,-121.4978,,,,,,True,False
-,PRESENT,1977-08-17,,229.0,229.0,1977.0,8.0,17.0,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1955-08-18,,230.0,230.0,1955.0,8.0,18.0,,,,NORTH_AMERICA,US,Idaho,Bonner,"Hager Pond area, 2 mi. so. of Nordman. (Boise Mer) In Cedar-Hemlock forest east of Hager Pond.",,,,,,48.63389,-116.94472,,,,,,True,False
 ,PRESENT,1927-07-27,,208.0,208.0,1927.0,7.0,27.0,,,,NORTH_AMERICA,US,Oregon,Wasco,bank of Frog Lake.,,,,,,45.2192,-121.6965,,,,,,True,False
 ,PRESENT,1973-06-25,,176.0,176.0,1973.0,6.0,25.0,,,,,US,Montana,Flathead,"Flathead National Forest, Flathead Range, Desert Mtn., Divide Ridge 0.1 miles south-southeast of Lookout, 5.1 miles east-northeast of Hungry Horse.",,,,,,,,,,,,,False,False
@@ -5247,7 +5240,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1993-09-18,,261.0,261.0,1993.0,9.0,18.0,,,,NORTH_AMERICA,US,Oregon,Jackson,Engelmann Spruce grove; about 1 mile north of Mount Ashland summit.,,,,,,42.0941,-122.7235,,,,,,True,False
 ,PRESENT,1935-06-16,,167.0,167.0,1935.0,6.0,16.0,,,,NORTH_AMERICA,US,Washington,Yakima,Chinook Pass.,,,,,,46.87222,-121.51444,,,,,,True,False
 ,PRESENT,1933-08-13,,225.0,225.0,1933.0,8.0,13.0,,,,,US,Oregon,Wasco,Along East Fork Hood River; near Sherwood Forest Camp; Mount Hood National Forest.,,,,,,,,,,,,,False,False
-,PRESENT,1977-08-17,,229.0,229.0,1977.0,8.0,17.0,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1923-07-11,,192.0,192.0,1923.0,7.0,11.0,,,,,US,Montana,Stillwater,West Rosebud River.,,,,,,,,,,,,,False,False
 ,PRESENT,1972-08-17,,230.0,230.0,1972.0,8.0,17.0,,,,NORTH_AMERICA,US,Idaho,Bonner,Kaniksu National Forest; Granite Creek 0.4 mi. SE of Granite Creek Bridge; 4.2 mi. NNW of Nordman.,,,,,,48.084686,-116.422017,,,,,,True,False
 ,PRESENT,1954-06-19,,170.0,170.0,1954.0,6.0,19.0,,,,,US,Oregon,,Rogue river valley.,,,,,,,,,,,,,False,False
@@ -5258,7 +5250,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1973-07-05,,186.0,186.0,1973.0,7.0,5.0,,,,NORTH_AMERICA,US,Washington,Pend Oreille,Round Top.,,,,,,48.81028,-117.12917,,,,,,True,False
 ,PRESENT,1918-09-26,,269.0,269.0,1918.0,9.0,26.0,,,,NORTH_AMERICA,US,Oregon,Union,,,,,,,45.36667,-118.00028,,,,,,True,False
 ,PRESENT,1975-07-01,,182.0,182.0,1975.0,7.0,1.0,,,,,US,Montana,Stillwater,21 miles south of Fishtail at the Mystic Lake power plant.,,,,,,,,,,,,,False,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,Vicinity of Helena.,,,,,,,,,,,,,False,False
 ,PRESENT,1977-08-10,,222.0,222.0,1977.0,8.0,10.0,,,,NORTH_AMERICA,US,Idaho,Bonner,"Selkirk Range, head of Canyon Creek 0.7 mi. NNE of Gisborne Mts. (Lookout); 11 mi. WNW of Sandpoint.",,,,,,48.363803,-116.760897,,,,,,True,False
 ,PRESENT,1929-10-02,,275.0,275.0,1929.0,10.0,2.0,,,,NORTH_AMERICA,US,Washington,Yakima,Bumping Lake.,,,,,,46.87333,-121.3,,,,,,True,False
 ,PRESENT,1930-06-09,,160.0,160.0,1930.0,6.0,9.0,,,,,US,Oregon,Douglas,"Rogue-Umpua Divide, Diamond Lake Road.",,,,,,,,,,,,,False,False
@@ -5269,7 +5260,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1927-07-08,,189.0,189.0,1927.0,7.0,8.0,,,,NORTH_AMERICA,US,Washington,Pend Oreille,South Baldy.,,,,,,48.42639,-117.13694,,,,,,True,False
 ,PRESENT,1918-09-26,,269.0,269.0,1918.0,9.0,26.0,,,,,US,Oregon,Union,Near Cove.,,,,,,,,,,,,,False,False
 ,PRESENT,1968-08-25,,238.0,238.0,1968.0,8.0,25.0,,,,,US,Montana,Beaverhead,Centennial Mountains.,,,,,,,,,,,,,False,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,No specific locality recorded.,,,,,,,,,,,,,False,False
 ,PRESENT,1932-07-14,,196.0,196.0,1932.0,7.0,14.0,,,,NORTH_AMERICA,US,Washington,Yakima,Jennie''s Butte.,,,,,,46.39444,-121.30889,,,,,,True,False
 ,PRESENT,1977-08-10,,222.0,222.0,1977.0,8.0,10.0,,,,,US,Idaho,Bonner,"Selkirk Range, head of Canyon Creek 0.7 miles NNE of Gisborn Mountain. (Lookout); 11 miles WNW of Sandpoint.",,,,,,,,,,,,,False,False
 ,PRESENT,1972-06-27,,179.0,179.0,1972.0,6.0,27.0,,,,NORTH_AMERICA,US,Oregon,Douglas,"near the east fork of Abbott Creek; along drainages of the east fork of Abbott Creek, ca. 20 miles west of Crater Lake, near Abbott Butte.",,,,,,42.9333,-122.5166,,,,,,True,False
@@ -5535,7 +5525,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,2005-07-24,,205.0,205.0,2005.0,7.0,24.0,,,,NORTH_AMERICA,US,Washington,Chelan,North Cascades National Park Complex.  Lake Chelan National Recreation Area.  Southeast Ridge of Rennie Peak.  About 800 meters west of the pass between Reynolds and Rennie Peaks.,,,,,,48.379967,-120.58455,,,,,,True,False
 ,PRESENT,1949-09-08,,251.0,251.0,1949.0,9.0,8.0,,,,NORTH_AMERICA,CA,British Columbia,,Near hope.,,,,,,,,,,,,,False,False
 ,PRESENT,1949-08-20,,232.0,232.0,1949.0,8.0,20.0,,,,NORTH_AMERICA,CA,British Columbia,,"Lytton, Stein River Valley.",,,,,,50.266667,-121.916667,,,,,,True,False
-,PRESENT,1896-08-12,,225.0,225.0,1896.0,8.0,12.0,,,,ASIA,AF,Oregon,Needs Research,below Crater Lake.,,,,,,,,,,,,,False,False
 ,PRESENT,1976-07-22,,204.0,204.0,1976.0,7.0,22.0,,,,NORTH_AMERICA,CA,British Columbia,,"Peace River Regional District, Quintette Mtn., mine site.",,,,,,54.916667,-120.916667,,,,,,True,False
 ,PRESENT,1943-06-29,,180.0,180.0,1943.0,6.0,29.0,,,,NORTH_AMERICA,CA,British Columbia,,Vicinity of sikanni river.,,,,,,57.233333,-122.716667,,,,,,True,False
 ,PRESENT,2008-09-06,,250.0,250.0,2008.0,9.0,6.0,,,,NORTH_AMERICA,US,Washington,King,Upper Seattle Creek on north side of watershed divide (or ridgeline) between Cedar and Green rivers. Near the end of the 610.1a1 Road.,,,,,,47.302983,-121.55733,,,,,,True,False
@@ -6053,7 +6042,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,,,,,,,,,,,NORTH_AMERICA,US,,,,,,,,,44.0,-121.0,,,,,,True,False
 ,PRESENT,1997-09-05,,248.0,248.0,1997.0,9.0,5.0,,,,NORTH_AMERICA,US,,,,Scott Lake near OR 126 west of McKenzie Pass in Oregon.,,,,,44.21667,-121.88333,,,,,,True,False
 ,PRESENT,1989-08,,,,1989.0,8.0,,,,,NORTH_AMERICA,US,,,,"Bitterroot Nat''l Forest, Hell''s Half Acre Saddle, very dry",,,,,45.83333,-115.25,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,2004-08-23,,236.0,236.0,2004.0,8.0,23.0,,,,NORTH_AMERICA,US,,,,,,,,,46.29583,-122.07833,,,,,,True,False
 ,PRESENT,1983-09-10,,253.0,253.0,1983.0,9.0,10.0,,,,NORTH_AMERICA,US,,,,"Thomas Lake and Wind River, Indian Heavens area",,,,,45.96633,-121.84562,,,,,,True,False
 ,PRESENT,1985-08-01,,213.0,213.0,1985.0,8.0,1.0,,,,NORTH_AMERICA,US,,,,"Willamette Nat''l Forest, Twin Meadows Rd, west aspect",,,,,44.5,-122.16667,,,,,,True,False
@@ -6073,7 +6061,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1985-08-05,,217.0,217.0,1985.0,8.0,5.0,,,,NORTH_AMERICA,US,,,,"Gifford Pinchot Nat''l Forest, slopes above road in old burn",,,,,46.0,-122.0,,,,,,True,False
 ,PRESENT,1986-08-08,,220.0,220.0,1986.0,8.0,8.0,,,,NORTH_AMERICA,US,,,,"Plumas Nat''l Forest, along Coldwater Creek, N slope",,,,,39.83333,-121.58333,,,,,,True,False
 ,PRESENT,1989-09-27,,270.0,270.0,1989.0,9.0,27.0,,,,NORTH_AMERICA,US,,,,Roadside on McKenzie Pass near Frog Camp,,,,,44.5,-122.5,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,,,,,,,,,,,NORTH_AMERICA,US,,,,,,,,,44.0,-121.0,,,,,,True,False
 ,PRESENT,1985-07-31,,212.0,212.0,1985.0,7.0,31.0,,,,NORTH_AMERICA,US,,,,"Willamette Nat''l Forest, clearcut area, 45 degree slope",,,,,44.5,-122.16667,,,,,,True,False
 ,PRESENT,1985-08-01,,213.0,213.0,1985.0,8.0,1.0,,,,NORTH_AMERICA,US,,,,"Willamette Nat''l Forest, from roadside and woods edge",,,,,44.5,-121.83333,,,,,,True,False
@@ -6081,7 +6068,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,1990-08-25,,237.0,237.0,1990.0,8.0,25.0,,,,NORTH_AMERICA,US,,,,Waldo Lake,,,,,43.75,-122.08333,,,,,,True,False
 ,PRESENT,1985-07-26,,207.0,207.0,1985.0,7.0,26.0,,,,NORTH_AMERICA,US,,,,"Rogue River Nat''l Forest, East aspect, 45 degree slope",,,,,42.83333,-122.5,,,,,,True,False
 ,PRESENT,1999-08,,,,1999.0,8.0,,,,,NORTH_AMERICA,US,,,,Whitehorse Falls Nation Forest Service Campground. Along North Umpqua River and State Highway 138 in Umpqua National Forest.,,,,,43.25,-122.33333,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1989-08,,,,1989.0,8.0,,,,,NORTH_AMERICA,US,,,,"Coeur d''Alene Nat''l Forest, Revett Lake, along trailsides",,,,,47.5,-116.0,,,,,,True,False
 ,PRESENT,1983-08-11,,223.0,223.0,1983.0,8.0,11.0,,,,NORTH_AMERICA,US,,,,Above Cougar Reservoir in old clearcut west slope,,,,,44.03333,-122.0,,,,,,True,False
 ,PRESENT,1985-07-30,,211.0,211.0,1985.0,7.0,30.0,,,,NORTH_AMERICA,US,,,,Deschutes Nat''l Forest,,,,,43.83333,-122.33333,,,,,,True,False
@@ -6112,7 +6098,6 @@ fruits or seeds,PRESENT,2017-08-12T12:44:59,12:44:59-07:00,224.0,224.0,2017.0,8.
 ,PRESENT,,,,,,,,,,,,US,,,,,,,,,,,,,,,,False,False
 ,PRESENT,1993-08-13,,225.0,225.0,1993.0,8.0,13.0,,,,NORTH_AMERICA,US,,,,Wenatchee National Forest. T26N R14E/R13E Sec 11 and Sec 14. Washington County. In open fields to the north of Steven''s Pass.,,,,,47.66667,-121.09028,,,,,,True,False
 ,PRESENT,1985-08-13,,225.0,225.0,1985.0,8.0,13.0,,,,NORTH_AMERICA,US,,,,"Olympic Nat''l Forest, clearcut, steep slopes, dry",,,,,47.66667,-123.0,,,,,,True,False
-,PRESENT,,,,,,,,,,,ASIA,AF,,,,,,,,,,,,,,,,False,False
 ,PRESENT,2003,,,,2003.0,,,,,,NORTH_AMERICA,US,,,,"Little Bald Mountain, 10 miles northeast of Harvard, Latah county.",,,,,47.02117,-116.58,,,,,,True,False
 ,PRESENT,1983,,,,1983.0,,,,,,,US,,,,"+9 miles southeast of McKenzie Bridge, Willamette National Forest.",,,,,,,,,,,,False,False
 ,PRESENT,1993-07-22,,203.0,203.0,1993.0,7.0,22.0,,,,NORTH_AMERICA,US,,,,"3 miles south of Lionhead Campground on the east side of Priest Lake in Bonner County, Idaho.",,,,,48.7051,-116.8415,,,,,,True,False

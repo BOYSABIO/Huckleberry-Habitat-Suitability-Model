@@ -102,6 +102,25 @@ def geocode_with_llm_fallback(row, geocode):
                 county_state += f", {row['countryCode']}"
             attempts.append(("County-State", county_state))
 
+        # Strategy 4: Try verbatimLocality if available
+        if pd.notnull(row.get('verbatimLocality')):
+            verbatim = str(row['verbatimLocality'])
+            # Skip if it's a generic "no verbatim locality recorded" message
+            if (verbatim.lower() not in ['no verbatim locality recorded', 
+                                        'nan', 'none', ''] and 
+                len(verbatim.strip()) > 5):
+                
+                # Try verbatim locality alone first
+                attempts.append(("Verbatim locality", verbatim))
+                
+                # Try verbatim locality with context
+                verbatim_parts = [verbatim]
+                for f in ['county', 'stateProvince', 'countryCode']:
+                    if pd.notnull(row[f]):
+                        verbatim_parts.append(str(row[f]))
+                verbatim_with_context = ", ".join(verbatim_parts)
+                attempts.append(("Verbatim with context", verbatim_with_context))
+
         # Try all non-LLM attempts first
         for attempt_type, location_str in attempts:
             logging.info(f"Trying {attempt_type}: {location_str}")
@@ -114,11 +133,35 @@ def geocode_with_llm_fallback(row, geocode):
                 logging.error(f"Error in {attempt_type} attempt: {e}")
                 results.append((attempt_type, str(e)))
 
-        # Strategy 4: Enhanced LLM landmark extraction as last resort
+        # Strategy 5: Enhanced LLM landmark extraction as last resort
+        # Try locality first, then verbatimLocality if locality is not available
+        locality_to_try = None
+        
+        # Check if we have a valid locality
         if pd.notnull(row['locality']):
-            landmark = extract_landmark_ollama(row['locality'])
+            locality_str = str(row['locality']).strip()
+            # Skip generic locality values
+            if (locality_str.lower() not in ['no specific locality recorded', 
+                                            'no locality recorded', 
+                                            'nan', 'none', ''] and 
+                len(locality_str) > 5):
+                locality_to_try = locality_str
+        
+        # If no valid locality, try verbatimLocality
+        if not locality_to_try and pd.notnull(row.get('verbatimLocality')):
+            verbatim_str = str(row['verbatimLocality']).strip()
+            # Skip generic verbatim locality values
+            if (verbatim_str.lower() not in ['no verbatim locality recorded', 
+                                            'no locality recorded', 
+                                            'nan', 'none', ''] and 
+                len(verbatim_str) > 5):
+                locality_to_try = verbatim_str
+        
+        # If we have a valid locality or verbatim locality to try
+        if locality_to_try:
+            landmark = extract_landmark_ollama(locality_to_try)
             if landmark:
-                logging.info(f"Extracted landmark: {landmark}")
+                logging.info(f"Extracted landmark from '{locality_to_try}': {landmark}")
                 # Try the landmark alone first
                 try:
                     location = geocode(landmark)
