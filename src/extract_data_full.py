@@ -8,7 +8,7 @@ import planetary_computer
 import time
 
 # ----------- CONFIG -----------
-INPUT_CSV = "./data/processed/date_location_occurrances.csv"    ## put your csv file here
+INPUT_CSV = "./data/processed/date_location_occurrances.csv"  # csv file here
 OUTPUT_CSV = "./data/enriched/test_df_spencer.csv"
 
 VARS_TO_EXTRACT = [
@@ -25,6 +25,7 @@ VARS_TO_EXTRACT = [
 RETRY_DELAY_SECONDS = 10
 # ------------------------------
 
+
 def load_dataset():
     try:
         print("🔄 Connecting to Planetary Computer...")
@@ -38,7 +39,7 @@ def load_dataset():
             asset.href,
             storage_options=asset.extra_fields["xarray:storage_options"],
             **asset.extra_fields["xarray:open_kwargs"],
-            chunks={"time": 365, "lat": 100, "lon": 100}
+            chunks="auto"  # Use auto chunking instead of manual chunks
         )
         print("✅ Dataset loaded.")
         return ds
@@ -46,12 +47,13 @@ def load_dataset():
         print(f"❌ Failed to load dataset: {e}")
         raise
 
+
 # Load dataset
 ds = load_dataset()
 
 # Load input data
 df = pd.read_csv(INPUT_CSV)
-df["date"] = pd.to_datetime(df["date"], errors="coerce")
+df["date"] = pd.to_datetime(df["datetime"], errors="coerce")  # datetime col
 df = df.reset_index(drop=True)
 
 # Resume from where we left off
@@ -81,7 +83,8 @@ for i in tqdm(range(start_idx, len(df)), desc="Extracting row by row"):
         # Basic validation
         if pd.isna(lat) or pd.isna(lon) or pd.isna(date):
             raise ValueError("Missing lat/lon/date")
-        if not (lat_min <= lat <= lat_max and lon_min <= lon <= lon_max and time_min <= date <= time_max):
+        if not (lat_min <= lat <= lat_max and lon_min <= lon <= lon_max and 
+                time_min <= date <= time_max):
             raise ValueError("Out of gridMET bounds")
 
         # Get nearest index
@@ -94,7 +97,8 @@ for i in tqdm(range(start_idx, len(df)), desc="Extracting row by row"):
         gridmet_lon = ds.lon.values[lon_idx]
         gridmet_date = pd.to_datetime(ds.time.values[time_idx])
 
-        print(f"📍 gridMET point: lat={gridmet_lat:.5f}, lon={gridmet_lon:.5f}, date={gridmet_date.date()}")
+        print(f"📍 gridMET point: lat={gridmet_lat:.5f}, "
+              f"lon={gridmet_lon:.5f}, date={gridmet_date.date()}")
 
         # Load cube and extract data
         data_cube = ds[VARS_TO_EXTRACT].isel(
@@ -106,7 +110,8 @@ for i in tqdm(range(start_idx, len(df)), desc="Extracting row by row"):
             "gridmet_lon": gridmet_lon,
             "gridmet_date": gridmet_date
         }
-        env_data.update({var: data_cube[var].values.item() for var in VARS_TO_EXTRACT})
+        env_data.update({var: data_cube[var].values.item() 
+                        for var in VARS_TO_EXTRACT})
 
         # Merge and save
         row_out = pd.concat([row, pd.Series(env_data)]).to_frame().T
@@ -127,4 +132,4 @@ for i in tqdm(range(start_idx, len(df)), desc="Extracting row by row"):
             continue  # retry same row
         except Exception as e2:
             print(f"🛑 Reconnection failed. Stopping. Error: {e2}")
-            break
+            break 
