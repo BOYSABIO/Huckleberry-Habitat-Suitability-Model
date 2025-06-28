@@ -1,11 +1,5 @@
-# Environment and virtual environment
-.env
-.venv/
-venv/
-ENV/
-
 # Python
-*__pycache__/
+__pycache__/
 *.py[cod]
 *$py.class
 *.so
@@ -28,31 +22,34 @@ wheels/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*/.ipynb_checkpoints/*
-notebooks/.ipynb_checkpoints/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Project specific
-# Data directory
-
-#data/processed/*
-!data/raw/.gitkeep
-#!data/processed/.gitkeep
-
-# Models directory
-models/*
-!models/.gitkeep
-
-#docs/notes/
-archive/
-
-# Logs and databases
+models/*.joblib
+analysis/*.csv
+analysis/*.json
+logs/*.log
 *.log
-*.sqlite
-*.db
+
+# Data (uncomment if you don't want to track data files)
+# data/
+# *.csv
+# *.json
