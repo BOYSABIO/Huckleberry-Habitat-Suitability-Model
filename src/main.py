@@ -29,32 +29,44 @@ def run_pipeline(args):
     df = loader.load_gbif_occurrences(args.input)
     logger.info(f"Loaded raw data: {len(df)} records")
 
-    # 2. Preprocess
+    # 2. Preprocess (basic cleaning and date processing)
     preprocessor = DataPreprocessor()
     df = preprocessor.clean_occurrence_data(df)
     logger.info(f"After cleaning: {len(df)} records")
 
-    # 3. Geocode
+    # 3. Temporal filtering (gridMET time bounds)
+    df = preprocessor.filter_gridmet_time_bounds(df)
+    logger.info(f"After temporal filtering: {len(df)} records")
+
+    # 4. Geocode (only temporally valid records)
     geocoder = Geocoder()
     df = geocoder.geocode_dataset(df)
     logger.info(f"After geocoding: {len(df)} records")
 
-    # 4. Manual geocode fallback
+    # 5. Spatial filtering (gridMET spatial bounds)
+    df = preprocessor.filter_gridmet_bounds(df)
+    logger.info(f"After spatial filtering: {len(df)} records")
+
+    # 6. Manual geocode fallback
     manual_dict = load_manual_geocodes()
     df = apply_manual_geocodes(df, manual_dict)
     logger.info(f"After manual geocode fallback: {len(df)} records")
 
-    # 5. Validate
+    # 7. Validate
     validate_data(df, expected_columns=['decimallatitude', 'decimallongitude'])
 
-    # 6. Feature engineering
+    # 8. Add occurrence column (for real occurrences)
+    df['occurrence'] = 1
+    logger.info("Added 'occurrence' column (set to 1 for all records)")
+
+    # 9. Feature engineering
     env = EnvironmentalDataExtractor()
     df = env.add_elevation_data(df)
     df = env.add_soil_data(df)
     df = env.create_environmental_features(df)
     logger.info(f"After feature engineering: {df.shape}")
 
-    # 7. Model training
+    # 10. Model training
     if args.model == 'ensemble':
         model = HuckleberryPredictor()
     else:
@@ -65,7 +77,7 @@ def run_pipeline(args):
     model.save_model(args.model_path)
     logger.info(f"Model trained and saved to {args.model_path}")
 
-    # 8. Inference (optional)
+    # 11. Inference (optional)
     if args.infer:
         preds = run_inference(args.model_path, X)
         logger.info(f"Inference complete. Predictions: {preds[:5]}")
