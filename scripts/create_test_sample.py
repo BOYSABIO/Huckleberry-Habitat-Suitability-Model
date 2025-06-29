@@ -191,7 +191,7 @@ def main():
         df = load_occurrence_data(input_file)
         
         # Create diverse sample
-        sample_df = create_diverse_sample(df, sample_size=50)
+        sample_df = create_diverse_sample(df, sample_size=15)
         
         # Save the sample
         save_test_sample(sample_df, output_file)

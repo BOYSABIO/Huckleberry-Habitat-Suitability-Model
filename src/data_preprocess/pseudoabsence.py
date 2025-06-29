@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from shapely.geometry import Point
 from sklearn.neighbors import BallTree
 from datetime import timedelta
 
 
-def generate_pseudo_absences(df_occurrences, ratio=3, buffer_km=5, random_seed=42):
+def generate_pseudo_absences(df_occurrences, ratio=3, buffer_km=5,
+                            random_seed=42):
     """
     Generate pseudo-absence points for habitat modeling.
     - ratio: number of pseudo-absences per occurrence
@@ -26,7 +26,8 @@ def generate_pseudo_absences(df_occurrences, ratio=3, buffer_km=5, random_seed=4
 
     lat_range = (df["decimalLatitude"].min(), df["decimalLatitude"].max())
     lon_range = (df["decimalLongitude"].min(), df["decimalLongitude"].max())
-    date_range = (pd.to_datetime(df["datetime"]).min(), pd.to_datetime(df["datetime"]).max())
+    date_range = (pd.to_datetime(df["datetime"]).min(),
+                 pd.to_datetime(df["datetime"]).max())
 
     # Get list of columns to preserve structure
     gridmet_columns = [col for col in df.columns if col != "occurrence"]
@@ -40,11 +41,16 @@ def generate_pseudo_absences(df_occurrences, ratio=3, buffer_km=5, random_seed=4
 
         dist, _ = tree.query(coord_rad, k=1)
         if dist[0][0] >= buffer_rad:
-            random_date = date_range[0] + timedelta(days=np.random.randint(0, (date_range[1] - date_range[0]).days + 1))
+            random_date = (date_range[0] +
+                          timedelta(days=np.random.randint(
+                              0, (date_range[1] - date_range[0]).days + 1)))
             row = {
                 "decimalLatitude": lat,
                 "decimalLongitude": lon,
                 "datetime": random_date.strftime("%Y-%m-%d"),
+                "year": random_date.year,
+                "month": random_date.month,
+                "day": random_date.day,
                 "occurrence": 0
             }
             # Fill rest of columns with NaN to match structure
@@ -55,5 +61,7 @@ def generate_pseudo_absences(df_occurrences, ratio=3, buffer_km=5, random_seed=4
         attempts += 1
 
     pseudo_df = pd.DataFrame(pseudo_points)[df.columns]  # reorder to match
-    combined = pd.concat([df, pseudo_df], ignore_index=True).sample(frac=1, random_state=random_seed).reset_index(drop=True)
+    combined = (pd.concat([df, pseudo_df], ignore_index=True)
+               .sample(frac=1, random_state=random_seed)
+               .reset_index(drop=True))
     return combined 

@@ -107,59 +107,96 @@ def test_pipeline():
         manual_dict = load_manual_geocodes()
         df_final = apply_manual_geocodes(df_spatial, manual_dict)
         logger.info(f"✅ Successfully applied manual geocodes: {len(df_final)} records")
-        # Do NOT select only essential columns yet; keep datetime for pseudo-absence generation
-    except Exception as e:
-        logger.error(f"❌ Failed to apply manual geocodes: {e}")
-        return
-
-    # 7. Validate final data
-    logger.info("\n7. Validating final data...")
-    try:
-        validate_data(df_final, expected_columns=['decimalLatitude', 'decimalLongitude', 'year', 'month', 'day'])
-        logger.info("✅ Data validation passed")
         # Add occurrence column (for real occurrences)
         df_final['occurrence'] = 1
         logger.info("Added 'occurrence' column (set to 1 for all records)")
     except Exception as e:
-        logger.error(f"❌ Data validation failed: {e}")
+        logger.error(f"❌ Failed to apply manual geocodes: {e}")
         return
 
-    # 8. Generate pseudo-absences and combine
-    logger.info("\n8. Generating pseudo-absences and combining...")
+    # 7. Generate pseudo-absences and combine
+    logger.info("\n7. Generating pseudo-absences and combining...")
     try:
         from src.data_preprocess.pseudoabsence import generate_pseudo_absences
         combined_df = generate_pseudo_absences(df_final, ratio=3, buffer_km=5, random_seed=42)
         logger.info(f"✅ Generated pseudo-absences: {sum(combined_df['occurrence'] == 0)} records")
         logger.info(f"   Total records after combining: {len(combined_df)}")
-        # Now select only essential columns for output
-        combined_df = preprocessor.select_columns(combined_df)
-        logger.info(f"✅ Selected essential columns for output: {combined_df.columns.tolist()}")
     except Exception as e:
         logger.error(f"❌ Failed to generate pseudo-absences: {e}")
         return
-    
-    # 9. Save processed data
-    logger.info("\n9. Saving processed data...")
+
+    # 8. Select essential columns for output
+    logger.info("\n8. Selecting essential columns for output...")
     try:
-        loader.save_processed_data(combined_df, 'test_sample_processed.csv')
-        logger.info("✅ Successfully saved processed test data")
+        combined_df = preprocessor.select_columns(combined_df)
+        logger.info(f"✅ Selected essential columns for output: {combined_df.columns.tolist()}")
+    except Exception as e:
+        logger.error(f"❌ Failed to select essential columns: {e}")
+        return
+
+    # 9. Save processed dataset (before environmental data)
+    logger.info("\n9. Saving processed dataset...")
+    try:
+        loader.save_processed_data(combined_df, 'huckleberry_processed.csv')
+        logger.info("✅ Successfully saved processed dataset (before environmental data)")
+    except Exception as e:
+        logger.error(f"❌ Failed to save processed dataset: {e}")
+        return
+
+    # 10. Feature engineering (environmental data)
+    logger.info("\n10. Feature engineering (environmental data)...")
+    try:
+        from src.features.environmental import EnvironmentalDataExtractor
+        env = EnvironmentalDataExtractor()
+        
+        # Extract GridMET climate data
+        combined_df = env.extract_gridmet_data(combined_df)
+        logger.info(f"✅ GridMET data extracted: {len([col for col in combined_df.columns if col.startswith('air_') or col.startswith('precip') or col.startswith('specific_') or col.startswith('relative_') or col.startswith('mean_') or col.startswith('potential_') or col.startswith('surface_') or col.startswith('wind_')])} climate variables")
+        
+        # Add elevation data
+        combined_df = env.add_elevation_data(combined_df)
+        logger.info(f"✅ Elevation data added: {combined_df['elevation'].notna().sum()}/{len(combined_df)} records")
+        
+        # Add soil pH data
+        combined_df = env.add_soil_data(combined_df)
+        logger.info(f"✅ Soil pH data added: {combined_df['soil_ph'].notna().sum()}/{len(combined_df)} records")
         
     except Exception as e:
-        logger.error(f"❌ Failed to save processed data: {e}")
+        logger.error(f"❌ Failed to add environmental data: {e}")
+        return
+
+    # 11. Validate final complete dataset
+    logger.info("\n11. Validating final complete dataset...")
+    try:
+        validate_data(combined_df, expected_columns=['decimalLatitude', 'decimalLongitude', 'year', 'month', 'day', 'datetime', 'occurrence'])
+        logger.info("✅ Data validation passed for complete enriched dataset")
+    except Exception as e:
+        logger.error(f"❌ Data validation failed: {e}")
         return
     
-    # 10. Final summary
+    # 12. Save final enriched dataset
+    logger.info("\n12. Saving final enriched dataset...")
+    try:
+        loader.save_enriched_data(combined_df, 'huckleberry_final_enriched.csv')
+        logger.info("✅ Successfully saved final enriched dataset")
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to save final enriched dataset: {e}")
+        return
+    
+    # 13. Final summary
     logger.info("\n=== PIPELINE TEST SUMMARY ===")
     logger.info(f"✅ Pipeline completed successfully!")
     logger.info(f"   Original records: {len(df)}")
     logger.info(f"   Final records: {len(combined_df)}")
     logger.info(f"   Records with coordinates: {combined_df['decimalLatitude'].notna().sum()}")
     logger.info(f"   Pseudo-absences: {sum(combined_df['occurrence'] == 0)}")
-    logger.info(f"   Ready for feature engineering: {'Yes' if len(combined_df) > 0 else 'No'}")
+    logger.info(f"   Environmental variables: {len([col for col in combined_df.columns if col not in ['decimalLatitude', 'decimalLongitude', 'datetime', 'occurrence', 'gbifID', 'year', 'month', 'day']])}")
+    logger.info(f"   Ready for modeling: {'Yes' if len(combined_df) > 0 else 'No'}")
     
     # Show sample of final data
     logger.info(f"\nSample of final processed data:")
-    sample_cols = ['decimalLatitude', 'decimalLongitude', 'countryCode', 'stateProvince', 'locality', 'occurrence']
+    sample_cols = ['decimalLatitude', 'decimalLongitude', 'occurrence', 'air_temperature', 'elevation', 'soil_ph']
     available_cols = [col for col in sample_cols if col in combined_df.columns]
     logger.info(combined_df[available_cols].head(3).to_string())
 

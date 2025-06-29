@@ -279,6 +279,10 @@ class DataPreprocessor:
             'month': df['month'].sample(n=n_absences, replace=True).values,
             'day': df['day'].sample(n=n_absences, replace=True).values
         })
+        
+        # Create datetime column from year, month, day
+        pseudo_absences['datetime'] = pd.to_datetime(pseudo_absences[['year', 'month', 'day']])
+        
         df['occurrence'] = 1
         pseudo_absences['occurrence'] = 0
         combined_df = pd.concat([df, pseudo_absences], ignore_index=True)
@@ -346,8 +350,8 @@ class DataPreprocessor:
             # Combine spatial and temporal filtering
             gridmet_mask = spatial_mask & temporal_mask
             
-            # Keep records that pass gridMET bounds OR records without coordinates/dates
-            valid_mask = gridmet_mask | ~(has_coords & has_dates)
+            # Keep records that pass gridMET bounds OR records without coordinates (for geocoding)
+            valid_mask = gridmet_mask | ~has_coords
             filtered_df = df[valid_mask].copy()
             
             # Logging statistics
@@ -358,10 +362,10 @@ class DataPreprocessor:
             
             logger.info(f"GridMET filtering: {len(df)} -> {len(filtered_df)} records")
             logger.info(f"  - Records with coordinates and dates: {records_with_coords_dates}")
-            logger.info(f"  - Records outside spatial bounds: {records_outside_spatial}")
-            logger.info(f"  - Records outside temporal bounds: {records_outside_temporal}")
+            logger.info(f"  - Records outside spatial bounds (dropped): {records_outside_spatial}")
+            logger.info(f"  - Records outside temporal bounds (dropped): {records_outside_temporal}")
             logger.info(f"  - Records within gridMET bounds: {records_kept}")
-            logger.info(f"  - Records without coords/dates (kept): {(~(has_coords & has_dates)).sum()}")
+            logger.info(f"  - Records without coordinates (kept for geocoding): {(~has_coords).sum()}")
         else:
             # No coordinates or dates to filter, keep all records
             filtered_df = df.copy()

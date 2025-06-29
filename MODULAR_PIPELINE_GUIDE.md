@@ -158,16 +158,40 @@ dataset_with_absences = preprocessor.create_pseudo_absences(geocoded_data)
 # Output: Balanced dataset with presence/absence data
 ```
 
-### Step 5: Extract Environmental Data
+### Step 5: Save Processed Dataset
 ```python
+# Save the processed dataset (before environmental data)
+loader.save_processed_data(dataset_with_absences, 'huckleberry_processed.csv')
+# Output: data/processed/huckleberry_processed.csv
+```
+
+### Step 6: Extract Environmental Data
+```python
+# Initialize environmental data extractor
+from src.features.environmental import EnvironmentalDataExtractor
+extractor = EnvironmentalDataExtractor()
+
 # Extract GridMET climate data
 enriched_data = extractor.extract_gridmet_data(dataset_with_absences)
-# Add elevation and soil data
+# Add elevation data
 enriched_data = extractor.add_elevation_data(enriched_data)
+# Add soil pH data
 enriched_data = extractor.add_soil_data(enriched_data)
-# Create derived features
-enriched_data = extractor.create_environmental_features(enriched_data)
-# Output: Final enriched dataset ready for modeling
+# Output: Dataset with environmental variables
+```
+
+### Step 7: Validate Final Combined Data
+```python
+# Validate the complete dataset (occurrences + pseudo-absences + environmental data)
+validate_data(enriched_data, expected_columns=['decimalLatitude', 'decimalLongitude', 'year', 'month', 'day', 'datetime', 'occurrence'])
+# Output: Validated dataset ready for modeling
+```
+
+### Step 8: Save Final Enriched Dataset
+```python
+# Save the final enriched dataset
+loader.save_enriched_data(enriched_data, 'huckleberry_final_enriched.csv')
+# Output: data/enriched/huckleberry_final_enriched.csv
 ```
 
 ## Configuration Options
