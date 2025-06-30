@@ -64,6 +64,12 @@ class InferencePipeline:
                         'version_id': 'legacy_model'
                     }
                     self.logger.info(f"Loaded legacy-format model: {model_file}")
+                    
+                    # If feature_names is empty, try to get them from the model
+                    if not self.feature_names and hasattr(self.model, 'feature_names_in_'):
+                        self.feature_names = list(self.model.feature_names_in_)
+                        self.model_data['feature_names'] = self.feature_names
+                        self.logger.info(f"Extracted feature names from model: {self.feature_names}")
                 else:
                     # Direct model format
                     self.model = loaded_data
@@ -74,6 +80,12 @@ class InferencePipeline:
                         'version_id': 'direct_model'
                     }
                     self.logger.info(f"Loaded direct model: {model_file}")
+                    
+                    # Try to get feature names from the model
+                    if hasattr(self.model, 'feature_names_in_'):
+                        self.feature_names = list(self.model.feature_names_in_)
+                        self.model_data['feature_names'] = self.feature_names
+                        self.logger.info(f"Extracted feature names from model: {self.feature_names}")
             else:
                 # Load from registry
                 self.model_data = self.model_registry.load_model()
@@ -84,40 +96,40 @@ class InferencePipeline:
             self.logger.error(f"Failed to load model: {str(e)}")
             raise
     
+    def _get_latest_gridmet_date(self) -> pd.Timestamp:
+        """Get the latest available date from GridMET dataset."""
+        try:
+            # Load GridMET dataset to get time range
+            ds = self.env_extractor.load_gridmet_dataset()
+            latest_time = pd.to_datetime(ds.time.values.max())
+            self.logger.info(f"Latest GridMET date: {latest_time}")
+            return latest_time
+        except Exception as e:
+            self.logger.warning(f"Failed to get latest GridMET date: {e}")
+            # Fallback to a reasonable date within GridMET range
+            return pd.Timestamp('2020-12-31')
+    
     @log_pipeline_step("Input Validation")
     def validate_input(
         self, 
-        coordinates: List[Tuple[float, float]], 
-        dates: Optional[List[str]] = None
+        coordinates: List[Tuple[float, float]]
     ) -> pd.DataFrame:
         """
         Validate and prepare input data for inference.
         
         Args:
             coordinates: List of (lat, lon) tuples
-            dates: List of date strings (optional, defaults to current year)
             
         Returns:
             DataFrame with validated input data
         """
         self.logger.info(f"Validating input: {len(coordinates)} coordinates")
         
-        # Create DataFrame from coordinates
+        # Create DataFrame from coordinates only
+        # Let environmental extraction determine the best dates dynamically
         df = pd.DataFrame(coordinates, columns=['decimalLatitude', 'decimalLongitude'])
         
-        # Add dates if provided, otherwise use current year
-        if dates is None:
-            from datetime import datetime
-            current_year = datetime.now().year
-            df['year'] = current_year
-            df['month'] = 6  # Default to June
-            df['day'] = 15   # Default to middle of month
-        else:
-            # Parse dates
-            df['datetime'] = pd.to_datetime(dates)
-            df['year'] = df['datetime'].dt.year
-            df['month'] = df['datetime'].dt.month
-            df['day'] = df['datetime'].dt.day
+        self.logger.info("Coordinates prepared for environmental extraction")
         
         # Validate required columns
         is_valid = validate_inference_data(df, self.settings.inference.required_columns)
@@ -145,6 +157,21 @@ class InferencePipeline:
         # Add soil data
         df_with_soil = self.env_extractor.add_soil_data(df_with_elevation)
         
+        # Extract year, month, day from datetime (added by environmental extraction)
+        if 'datetime' in df_with_soil.columns:
+            df_with_soil['year'] = df_with_soil['datetime'].dt.year
+            df_with_soil['month'] = df_with_soil['datetime'].dt.month
+            df_with_soil['day'] = df_with_soil['datetime'].dt.day
+            
+            # Add season_num feature (same logic as training pipeline)
+            df_with_soil['season_num'] = df_with_soil['month'].apply(
+                lambda m: 1 if m in [12, 1, 2] else  # Winter
+                2 if m in [3, 4, 5] else  # Spring
+                3 if m in [6, 7, 8] else  # Summer
+                4  # Fall (9, 10, 11)
+            )
+            self.logger.info(f"Date components and season extracted from GridMET datetime")
+        
         self.logger.info(f"Environmental data extraction complete: {df_with_soil.shape}")
         return df_with_soil
     
@@ -153,9 +180,14 @@ class InferencePipeline:
         """Prepare features for model prediction."""
         self.logger.info("Preparing features for prediction")
         
+        # Debug: Log available columns and expected features
+        self.logger.info(f"Available columns: {list(df.columns)}")
+        self.logger.info(f"Model expects features: {self.feature_names}")
+        
         # Ensure all required features are present
         missing_features = set(self.feature_names) - set(df.columns)
         if missing_features:
+            self.logger.error(f"Missing features: {missing_features}")
             raise ValueError(f"Missing features: {missing_features}")
         
         # Select only the features used by the model
@@ -168,7 +200,7 @@ class InferencePipeline:
         return feature_df
     
     @log_pipeline_step("Model Prediction")
-    def make_predictions(self, feature_df: pd.DataFrame) -> pd.DataFrame:
+    def make_predictions(self, feature_df: pd.DataFrame, original_df: pd.DataFrame) -> pd.DataFrame:
         """Make predictions using the loaded model."""
         self.logger.info("Making predictions")
         
@@ -176,8 +208,8 @@ class InferencePipeline:
         predictions = self.model.predict(feature_df)
         probabilities = self.model.predict_proba(feature_df)
         
-        # Create results DataFrame
-        results_df = feature_df.copy()
+        # Create results DataFrame with original data and predictions
+        results_df = original_df.copy()
         results_df['prediction'] = predictions
         results_df['probability'] = probabilities[:, 1]  # Probability of occurrence
         
@@ -187,7 +219,7 @@ class InferencePipeline:
     def create_prediction_map(
         self,
         results_df: pd.DataFrame,
-        output_path: str = "outputs/prediction_map.html",
+        output_path: str = "outputs/maps/prediction_map.html",
         confidence_threshold: float = 0.8
     ) -> str:
         """
@@ -241,10 +273,36 @@ class InferencePipeline:
         self.logger.info(f"Prediction map saved to: {output_path}")
         return str(output_path)
     
+    def save_predictions_csv(
+        self,
+        results_df: pd.DataFrame,
+        output_path: str = "outputs/predictions/inference_predictions.csv"
+    ) -> str:
+        """
+        Save predictions to CSV file.
+        
+        Args:
+            results_df: DataFrame with predictions
+            output_path: Path to save the CSV file
+            
+        Returns:
+            Path to the saved CSV file
+        """
+        self.logger.info("Saving predictions to CSV")
+        
+        # Create output directory if it doesn't exist
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Save to CSV
+        results_df.to_csv(output_path, index=False)
+        
+        self.logger.info(f"Predictions saved to: {output_path}")
+        return str(output_path)
+    
     def run(
         self,
         coordinates: List[Tuple[float, float]],
-        dates: Optional[List[str]] = None,
         create_map: bool = True,
         confidence_threshold: float = 0.8
     ) -> Dict[str, Any]:
@@ -253,7 +311,6 @@ class InferencePipeline:
         
         Args:
             coordinates: List of (lat, lon) tuples
-            dates: List of date strings (optional)
             create_map: Whether to create a prediction map
             confidence_threshold: Minimum confidence for suitable habitat
             
@@ -264,7 +321,7 @@ class InferencePipeline:
         
         try:
             # Step 1: Validate input
-            df = self.validate_input(coordinates, dates)
+            df = self.validate_input(coordinates)
             
             # Step 2: Extract environmental data
             df = self.extract_environmental_data(df)
@@ -273,16 +330,19 @@ class InferencePipeline:
             feature_df = self.prepare_features(df)
             
             # Step 4: Make predictions
-            results_df = self.make_predictions(feature_df)
+            results_df = self.make_predictions(feature_df, df)
             
-            # Step 5: Create map (optional)
+            # Step 5: Save predictions to CSV
+            csv_path = self.save_predictions_csv(results_df)
+            
+            # Step 6: Create map (optional)
             map_path = None
             if create_map:
                 map_path = self.create_prediction_map(
                     results_df, confidence_threshold=confidence_threshold
                 )
             
-            # Step 6: Prepare results
+            # Step 7: Prepare results
             suitable_count = sum(results_df['probability'] >= confidence_threshold)
             avg_confidence = results_df['probability'].mean()
             
@@ -295,6 +355,7 @@ class InferencePipeline:
                 "suitable_habitat_count": suitable_count,
                 "average_confidence": avg_confidence,
                 "predictions": results_df,
+                "csv_path": csv_path,
                 "map_path": map_path,
                 "model_version": self.model_data['version_id']
             }

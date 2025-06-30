@@ -66,7 +66,7 @@ class InferenceSettings:
     def __post_init__(self):
         if self.required_columns is None:
             self.required_columns = [
-                'decimalLatitude', 'decimalLongitude', 'year', 'month', 'day'
+                'decimalLatitude', 'decimalLongitude'
             ]
         if self.coordinate_columns is None:
             self.coordinate_columns = ['decimalLatitude', 'decimalLongitude']

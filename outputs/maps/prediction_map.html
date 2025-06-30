@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_6ed57f690953f2e7f89a0d49d3d471de {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_6ed57f690953f2e7f89a0d49d3d471de" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_6ed57f690953f2e7f89a0d49d3d471de = L.map(
+                "map_6ed57f690953f2e7f89a0d49d3d471de",
+                {
+                    center: [44.6, -116.39999999999999],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 8,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_20b77fdc2708d05b9e573c2cb888a0a9 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_20b77fdc2708d05b9e573c2cb888a0a9.addTo(map_6ed57f690953f2e7f89a0d49d3d471de);
+        
+    
+            var marker_884fdb3ad3d1212524d3554761fd4585 = L.marker(
+                [44.5, -116.5],
+                {
+}
+            ).addTo(map_6ed57f690953f2e7f89a0d49d3d471de);
+        
+    
+            var icon_fcd3695919ee3e1d7c411051961548b9 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "leaf",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_521515496be8384b396aa2fce41fabef = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_a7baf52a7508e4ef0faef024314ad7c6 = $(`<div id="html_a7baf52a7508e4ef0faef024314ad7c6" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 6.00%<br>             Latitude: 44.5000<br>             Longitude: -116.5000<br>             </div>`)[0];
+                popup_521515496be8384b396aa2fce41fabef.setContent(html_a7baf52a7508e4ef0faef024314ad7c6);
+            
+        
+
+        marker_884fdb3ad3d1212524d3554761fd4585.bindPopup(popup_521515496be8384b396aa2fce41fabef)
+        ;
+
+        
+    
+    
+                marker_884fdb3ad3d1212524d3554761fd4585.setIcon(icon_fcd3695919ee3e1d7c411051961548b9);
+            
+    
+            var marker_fdba50402796e5e044304706cf507039 = L.marker(
+                [44.6, -116.4],
+                {
+}
+            ).addTo(map_6ed57f690953f2e7f89a0d49d3d471de);
+        
+    
+            var icon_dd1ebaeaf11e6509aa12e03c12a5747f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "leaf",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_fe7989d242e84435ae1f4a0b5eaefee2 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_6b22592d957e0006f68a907e78921abb = $(`<div id="html_6b22592d957e0006f68a907e78921abb" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 6.00%<br>             Latitude: 44.6000<br>             Longitude: -116.4000<br>             </div>`)[0];
+                popup_fe7989d242e84435ae1f4a0b5eaefee2.setContent(html_6b22592d957e0006f68a907e78921abb);
+            
+        
+
+        marker_fdba50402796e5e044304706cf507039.bindPopup(popup_fe7989d242e84435ae1f4a0b5eaefee2)
+        ;
+
+        
+    
+    
+                marker_fdba50402796e5e044304706cf507039.setIcon(icon_dd1ebaeaf11e6509aa12e03c12a5747f);
+            
+    
+            var marker_644f4c1cc0b670d0af0655ebf6e8cadb = L.marker(
+                [44.7, -116.3],
+                {
+}
+            ).addTo(map_6ed57f690953f2e7f89a0d49d3d471de);
+        
+    
+            var icon_8b8fe0f0b2a79e7e310b1d631887c093 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "leaf",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5c1f78c6901253c8af8b770dab77e84b = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_860f3c236dcf37610499c650151010b3 = $(`<div id="html_860f3c236dcf37610499c650151010b3" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 12.00%<br>             Latitude: 44.7000<br>             Longitude: -116.3000<br>             </div>`)[0];
+                popup_5c1f78c6901253c8af8b770dab77e84b.setContent(html_860f3c236dcf37610499c650151010b3);
+            
+        
+
+        marker_644f4c1cc0b670d0af0655ebf6e8cadb.bindPopup(popup_5c1f78c6901253c8af8b770dab77e84b)
+        ;
+
+        
+    
+    
+                marker_644f4c1cc0b670d0af0655ebf6e8cadb.setIcon(icon_8b8fe0f0b2a79e7e310b1d631887c093);
+            
+</script>
+</html>

@@ -85,21 +85,35 @@ class EnvironmentalDataExtractor:
         
         # Filter to records within GridMET bounds
         df_filtered = df.copy()
-        df_filtered['datetime'] = pd.to_datetime(df_filtered['datetime'])
         
-        # Spatial and temporal filtering
+        # Handle datetime column - if not present, use latest available date
+        if 'datetime' not in df_filtered.columns:
+            logger.info("No datetime column provided, using latest available GridMET date")
+            latest_date = pd.to_datetime(ds.time.values.max())
+            df_filtered['datetime'] = latest_date
+            logger.info(f"Using latest GridMET date: {latest_date}")
+        else:
+            df_filtered['datetime'] = pd.to_datetime(df_filtered['datetime'])
+        
+        # Spatial filtering
         spatial_mask = (
             (df_filtered['decimalLatitude'] >= lat_min) &
             (df_filtered['decimalLatitude'] <= lat_max) &
             (df_filtered['decimalLongitude'] >= lon_min) &
             (df_filtered['decimalLongitude'] <= lon_max)
         )
-        temporal_mask = (
-            (df_filtered['datetime'] >= time_min) &
-            (df_filtered['datetime'] <= time_max)
-        )
         
-        valid_mask = spatial_mask & temporal_mask
+        # Temporal filtering (only if datetime was provided)
+        if 'datetime' in df.columns:
+            temporal_mask = (
+                (df_filtered['datetime'] >= time_min) &
+                (df_filtered['datetime'] <= time_max)
+            )
+            valid_mask = spatial_mask & temporal_mask
+        else:
+            # If using latest date, only check spatial bounds
+            valid_mask = spatial_mask
+        
         df_valid = df_filtered[valid_mask].copy()
         
         logger.info(f"Records within GridMET bounds: {len(df_valid)}/{len(df)}")

@@ -61,7 +61,6 @@ def run_training_pipeline(environment: str = None) -> dict:
 
 def run_inference_pipeline(
     coordinates: list,
-    dates: list = None,
     environment: str = None,
     create_map: bool = True,
     confidence_threshold: float = 0.8
@@ -71,7 +70,6 @@ def run_inference_pipeline(
     
     Args:
         coordinates: List of (lat, lon) tuples
-        dates: List of date strings (optional)
         environment: Environment name
         create_map: Whether to create a prediction map
         confidence_threshold: Minimum confidence for suitable habitat
@@ -87,7 +85,6 @@ def run_inference_pipeline(
     inference_pipeline = InferencePipeline(settings)
     results = inference_pipeline.run(
         coordinates=coordinates,
-        dates=dates,
         create_map=create_map,
         confidence_threshold=confidence_threshold
     )
@@ -126,7 +123,7 @@ def main():
     infer_parser.add_argument(
         '--dates',
         nargs='+',
-        help='Dates for inference (optional)'
+        help='Dates for inference (optional, will use latest GridMET date if not provided)'
     )
     infer_parser.add_argument(
         '--environment',
@@ -174,7 +171,6 @@ def main():
             
             results = run_inference_pipeline(
                 coordinates=coord_tuples,
-                dates=args.dates,
                 environment=args.environment,
                 create_map=not args.no_map,
                 confidence_threshold=args.confidence_threshold
@@ -185,6 +181,7 @@ def main():
             print(f"Valid coordinates: {results['valid_coordinates']}")
             print(f"Suitable habitat count: {results['suitable_habitat_count']}")
             print(f"Average confidence: {results['average_confidence']:.2%}")
+            print(f"Predictions saved to: {results['csv_path']}")
             
             if results['map_path']:
                 print(f"Map saved to: {results['map_path']}")
