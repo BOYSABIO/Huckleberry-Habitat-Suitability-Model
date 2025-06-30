@@ -1,115 +1,202 @@
 """
-Main orchestrator for the Huckleberry Habitat Prediction Pipeline.
-
-This script ties together all modular components: loading, preprocessing,
-geocoding (with manual fallback), validation, feature engineering, model
-training, and inference.
+Main entry point for the Huckleberry Habitat Prediction Pipeline.
 """
 
 import argparse
-import logging
-import pandas as pd
+import sys
 from pathlib import Path
 
-from data_load.loader import DataLoader
-from data_preprocess.preprocessor import DataPreprocessor
-from data_preprocess.geocode import Geocoder, load_manual_geocodes, apply_manual_geocodes
-from data_validation.validate import validate_data
-from features.environmental import EnvironmentalDataExtractor
-from model.pipeline import HuckleberryPredictor, RandomForestPredictor
-from model.feature_importance import FeatureAnalyzer
-from inference.predict import run_inference
+from src.config.settings import Settings
+from src.config.environments import get_settings
+from src.utils.logging_config import setup_logging
+from src.pipelines.training_pipeline import TrainingPipeline
+from src.pipelines.inference_pipeline import InferencePipeline
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
-def run_pipeline(args):
-    # 1. Load data
-    loader = DataLoader()
-    df = loader.load_gbif_occurrences(args.input)
-    logger.info(f"Loaded raw data: {len(df)} records")
-
-    # 2. Preprocess (basic cleaning and date processing)
-    preprocessor = DataPreprocessor()
-    df = preprocessor.clean_occurrence_data(df)
-    logger.info(f"After cleaning: {len(df)} records")
-
-    # 3. Temporal filtering (gridMET time bounds)
-    df = preprocessor.filter_gridmet_time_bounds(df)
-    logger.info(f"After temporal filtering: {len(df)} records")
-
-    # 4. Geocode (only temporally valid records)
-    geocoder = Geocoder()
-    df = geocoder.geocode_dataset(df)
-    logger.info(f"After geocoding: {len(df)} records")
-
-    # 5. Spatial filtering (gridMET spatial bounds)
-    df = preprocessor.filter_gridmet_bounds(df)
-    logger.info(f"After spatial filtering: {len(df)} records")
-
-    # 6. Manual geocode fallback
-    manual_dict = load_manual_geocodes()
-    df = apply_manual_geocodes(df, manual_dict)
-    logger.info(f"After manual geocode fallback: {len(df)} records")
-
-    # 7. Add occurrence column (for real occurrences)
-    df['occurrence'] = 1
-    logger.info("Added 'occurrence' column (set to 1 for all records)")
-
-    # 8. Extract GridMET data (this will filter out records outside bounds)
-    env = EnvironmentalDataExtractor()
-    df_with_gridmet = env.extract_gridmet_data(df)
-    logger.info(f"Records with GridMET data: {len(df_with_gridmet)}/{len(df)}")
+def setup_environment(environment: str = None) -> tuple[Settings, object]:
+    """
+    Set up the environment and logging.
     
-    if len(df_with_gridmet) == 0:
-        logger.error("❌ No records within GridMET bounds. Cannot proceed.")
-        return
+    Args:
+        environment: Environment name
+        
+    Returns:
+        Tuple of (settings, logger)
+    """
+    # Get settings for environment
+    settings = get_settings(environment)
+    
+    # Set up logging
+    logger = setup_logging(
+        name="huckleberry_pipeline",
+        level=settings.logging.level,
+        log_file=settings.logging.log_file,
+        format_string=settings.logging.format
+    )
+    
+    return settings, logger
 
-    # 9. Generate pseudo-absences and combine (only for records with GridMET data)
-    from data_preprocess.pseudoabsence import generate_pseudo_absences
-    combined_df = generate_pseudo_absences(df_with_gridmet, ratio=3, buffer_km=5, random_seed=42)
-    logger.info(f"Generated pseudo-absences: {sum(combined_df['occurrence'] == 0)} records")
-    logger.info(f"Total records after combining: {len(combined_df)}")
 
-    # 10. Save processed dataset (before additional environmental data)
-    loader = DataLoader()
-    loader.save_processed_data(combined_df, 'huckleberry_processed.csv')
-    logger.info(f"Processed dataset saved with {len(combined_df)} records")
+def run_training_pipeline(environment: str = None) -> dict:
+    """
+    Run the training pipeline.
+    
+    Args:
+        environment: Environment name
+        
+    Returns:
+        Training results
+    """
+    settings, logger = setup_environment(environment)
+    
+    logger.info("Starting training pipeline")
+    
+    # Initialize and run training pipeline
+    training_pipeline = TrainingPipeline(settings)
+    results = training_pipeline.run()
+    
+    logger.info("Training pipeline completed successfully")
+    return results
 
-    # 11. Add remaining environmental data (elevation and soil)
-    combined_df = env.add_elevation_data(combined_df)
-    combined_df = env.add_soil_data(combined_df)
-    logger.info(f"After feature engineering: {combined_df.shape}")
 
-    # 12. Validate final complete dataset
-    validate_data(combined_df, expected_columns=['decimalLatitude', 'decimalLongitude', 'year', 'month', 'day', 'datetime', 'occurrence'])
-    logger.info("Data validation passed for complete enriched dataset")
+def run_inference_pipeline(
+    coordinates: list,
+    dates: list = None,
+    environment: str = None,
+    create_map: bool = True,
+    confidence_threshold: float = 0.8
+) -> dict:
+    """
+    Run the inference pipeline.
+    
+    Args:
+        coordinates: List of (lat, lon) tuples
+        dates: List of date strings (optional)
+        environment: Environment name
+        create_map: Whether to create a prediction map
+        confidence_threshold: Minimum confidence for suitable habitat
+        
+    Returns:
+        Inference results
+    """
+    settings, logger = setup_environment(environment)
+    
+    logger.info("Starting inference pipeline")
+    
+    # Initialize and run inference pipeline
+    inference_pipeline = InferencePipeline(settings)
+    results = inference_pipeline.run(
+        coordinates=coordinates,
+        dates=dates,
+        create_map=create_map,
+        confidence_threshold=confidence_threshold
+    )
+    
+    logger.info("Inference pipeline completed successfully")
+    return results
 
-    # 13. Save final enriched dataset
-    loader.save_enriched_data(combined_df, 'huckleberry_final_enriched.csv')
-    logger.info(f"Final enriched dataset saved with {len(combined_df)} records and {combined_df.shape[1]} features")
 
-    # 14. Model training
-    if args.model == 'ensemble':
-        model = HuckleberryPredictor()
+def main():
+    """Main entry point."""
+    parser = argparse.ArgumentParser(
+        description="Huckleberry Habitat Prediction Pipeline"
+    )
+    
+    # Add subparsers for different commands
+    subparsers = parser.add_subparsers(dest='command', help='Available commands')
+    
+    # Training command
+    train_parser = subparsers.add_parser('train', help='Run training pipeline')
+    train_parser.add_argument(
+        '--environment',
+        choices=['development', 'production', 'testing', 'test_sample'],
+        default='development',
+        help='Environment to run in'
+    )
+    
+    # Inference command
+    infer_parser = subparsers.add_parser('infer', help='Run inference pipeline')
+    infer_parser.add_argument(
+        '--coordinates',
+        nargs='+',
+        type=float,
+        required=True,
+        help='Coordinates as lat1 lon1 lat2 lon2 ...'
+    )
+    infer_parser.add_argument(
+        '--dates',
+        nargs='+',
+        help='Dates for inference (optional)'
+    )
+    infer_parser.add_argument(
+        '--environment',
+        choices=['development', 'production', 'testing', 'test_sample'],
+        default='development',
+        help='Environment to run in'
+    )
+    infer_parser.add_argument(
+        '--no-map',
+        action='store_true',
+        help='Skip creating prediction map'
+    )
+    infer_parser.add_argument(
+        '--confidence-threshold',
+        type=float,
+        default=0.8,
+        help='Minimum confidence for suitable habitat'
+    )
+    
+    # Parse arguments
+    args = parser.parse_args()
+    
+    if args.command == 'train':
+        try:
+            results = run_training_pipeline(args.environment)
+            print("✅ Training completed successfully!")
+            print(f"Model version: {results['model_version_id']}")
+            print(f"Final record count: {results['final_record_count']}")
+            print(f"Metrics: {results['metrics']}")
+            
+        except Exception as e:
+            print(f"❌ Training failed: {str(e)}")
+            sys.exit(1)
+    
+    elif args.command == 'infer':
+        try:
+            # Convert coordinates to tuples
+            if len(args.coordinates) % 2 != 0:
+                raise ValueError("Coordinates must be pairs of lat, lon")
+            
+            coord_tuples = [
+                (args.coordinates[i], args.coordinates[i + 1])
+                for i in range(0, len(args.coordinates), 2)
+            ]
+            
+            results = run_inference_pipeline(
+                coordinates=coord_tuples,
+                dates=args.dates,
+                environment=args.environment,
+                create_map=not args.no_map,
+                confidence_threshold=args.confidence_threshold
+            )
+            
+            print("✅ Inference completed successfully!")
+            print(f"Total coordinates: {results['total_coordinates']}")
+            print(f"Valid coordinates: {results['valid_coordinates']}")
+            print(f"Suitable habitat count: {results['suitable_habitat_count']}")
+            print(f"Average confidence: {results['average_confidence']:.2%}")
+            
+            if results['map_path']:
+                print(f"Map saved to: {results['map_path']}")
+            
+        except Exception as e:
+            print(f"❌ Inference failed: {str(e)}")
+            sys.exit(1)
+    
     else:
-        model = RandomForestPredictor()
-    X = combined_df.drop(columns=['occurrence'])
-    y = combined_df['occurrence']
-    model.fit(X, y)
-    model.save_model(args.model_path)
-    logger.info(f"Model trained and saved to {args.model_path}")
+        parser.print_help()
+        sys.exit(1)
 
-    # 15. Inference (optional)
-    if args.infer:
-        preds = run_inference(args.model_path, X)
-        logger.info(f"Inference complete. Predictions: {preds[:5]}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Huckleberry Habitat Prediction Pipeline")
-    parser.add_argument('--input', type=str, default='data/raw/occurrence.txt', help='Input data file')
-    parser.add_argument('--model', type=str, choices=['ensemble', 'random_forest'], default='ensemble', help='Model type')
-    parser.add_argument('--model-path', type=str, default='models/huckleberry_model.joblib', help='Path to save trained model')
-    parser.add_argument('--infer', action='store_true', help='Run inference after training')
-    args = parser.parse_args()
-    run_pipeline(args) 
+    main() 

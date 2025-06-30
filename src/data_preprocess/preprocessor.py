@@ -184,67 +184,103 @@ class DataPreprocessor:
         return df
 
     def _process_dates(self, df: pd.DataFrame) -> pd.DataFrame:
-        logger.info("Processing dates...")
+        """Process and standardize date information from all possible columns."""
+        logger.info("Processing dates with robust multi-source logic...")
         
-        # Strategy 1: Try eventDate first (most reliable)
-        df['datetime'] = pd.to_datetime(df['eventDate'], errors='coerce')
-        valid_from_event = df['datetime'].notna().sum()
-        logger.info(f"Extracted dates from eventDate: {valid_from_event} records")
+        # 1. Try eventDate first
+        df['datetime'] = pd.to_datetime(df.get('eventDate', pd.NA), errors='coerce')
+        valid_from_eventdate = df['datetime'].notna().sum()
+        logger.info(f"Extracted dates from eventDate: {valid_from_eventdate} records")
         
-        # Strategy 2: For rows where eventDate failed, try year/month/day columns
+        # 2. For rows where eventDate failed, try year/month/day
         mask = df['datetime'].isna()
         if mask.any() and all(col in df.columns for col in ['year', 'month', 'day']):
-            df.loc[mask, 'datetime'] = pd.to_datetime({
-                'year': df.loc[mask, 'year'],
-                'month': df.loc[mask, 'month'],
-                'day': df.loc[mask, 'day']
-            }, errors='coerce')
-            valid_from_ymd = df.loc[mask, 'datetime'].notna().sum()
-            logger.info(f"Extracted dates from year/month/day columns: {valid_from_ymd} records")
+            valid_components = (
+                df.loc[mask, 'year'].notna() &
+                df.loc[mask, 'month'].notna() &
+                df.loc[mask, 'day'].notna()
+            )
+            if valid_components.any():
+                component_mask = mask & valid_components
+                df.loc[component_mask, 'datetime'] = pd.to_datetime({
+                    'year': df.loc[component_mask, 'year'],
+                    'month': df.loc[component_mask, 'month'],
+                    'day': df.loc[component_mask, 'day']
+                }, errors='coerce')
+                valid_from_ymd = df.loc[component_mask, 'datetime'].notna().sum()
+                logger.info(f"Extracted dates from year/month/day: {valid_from_ymd} additional records")
         
-        # Strategy 3: For rows still missing datetime, try startDayOfYear with year
+        # 3. For rows still missing, try startDayOfYear + year
         mask = df['datetime'].isna()
-        if mask.any() and 'startDayOfYear' in df.columns:
+        if mask.any() and 'startDayOfYear' in df.columns and 'year' in df.columns:
             def day_of_year_to_date(row):
                 try:
                     if pd.notna(row['year']) and pd.notna(row['startDayOfYear']):
                         return pd.Timestamp(year=int(row['year']), month=1, day=1) + pd.Timedelta(days=int(row['startDayOfYear'])-1)
-                except:
+                except Exception:
                     return pd.NaT
                 return pd.NaT
-            
-            df.loc[mask, 'datetime'] = df[mask].apply(day_of_year_to_date, axis=1)
-            valid_from_doy = df.loc[mask, 'datetime'].notna().sum()
-            logger.info(f"Extracted dates from startDayOfYear: {valid_from_doy} records")
+            new_dates = df.loc[mask].apply(day_of_year_to_date, axis=1)
+            df.loc[mask, 'datetime'] = new_dates
+            valid_from_startdoy = new_dates.notna().sum()
+            logger.info(f"Extracted dates from startDayOfYear: {valid_from_startdoy} additional records")
         
-        # Strategy 4: For remaining NaN, try verbatimEventDate
+        # 4. For rows still missing, try verbatimEventDate
         mask = df['datetime'].isna()
         if mask.any() and 'verbatimEventDate' in df.columns:
-            df.loc[mask, 'datetime'] = pd.to_datetime(df.loc[mask, 'verbatimEventDate'], errors='coerce')
-            valid_from_verbatim = df.loc[mask, 'datetime'].notna().sum()
-            logger.info(f"Extracted dates from verbatimEventDate: {valid_from_verbatim} records")
+            new_dates = pd.to_datetime(df.loc[mask, 'verbatimEventDate'], errors='coerce')
+            df.loc[mask, 'datetime'] = new_dates
+            valid_from_verbatim = new_dates.notna().sum()
+            logger.info(f"Extracted dates from verbatimEventDate: {valid_from_verbatim} additional records")
         
-        # Strategy 5: As last resort, use dateIdentified
+        # 5. For rows still missing, try dateIdentified
         mask = df['datetime'].isna()
         if mask.any() and 'dateIdentified' in df.columns:
-            df.loc[mask, 'datetime'] = pd.to_datetime(df.loc[mask, 'dateIdentified'], errors='coerce')
-            valid_from_identified = df.loc[mask, 'datetime'].notna().sum()
-            logger.info(f"Extracted dates from dateIdentified: {valid_from_identified} records")
+            new_dates = pd.to_datetime(df.loc[mask, 'dateIdentified'], errors='coerce')
+            df.loc[mask, 'datetime'] = new_dates
+            valid_from_identified = new_dates.notna().sum()
+            logger.info(f"Extracted dates from dateIdentified: {valid_from_identified} additional records")
         
-        # Drop records that still don't have valid dates
-        missing_datetime = df['datetime'].isna()
-        if missing_datetime.any():
-            records_dropped = missing_datetime.sum()
-            df = df[~missing_datetime].copy()
-            logger.info(f"Dropped {records_dropped} records without valid dates")
-        
-        # Extract year, month, day from the clean datetime column
+        # Extract date components from final datetime
         df['year'] = df['datetime'].dt.year
         df['month'] = df['datetime'].dt.month
         df['day'] = df['datetime'].dt.day
         
-        logger.info(f"Date processing complete: {len(df)} records with clean year/month/day")
-        logger.info(f"Date range: {df['datetime'].min()} to {df['datetime'].max()}")
+        # Add season_num feature
+        df = self._add_season_feature(df)
+        
+        total_valid = df['datetime'].notna().sum()
+        total_invalid = df['datetime'].isna().sum()
+        logger.info(f"Date processing complete: {total_valid} valid dates, {total_invalid} invalid dates")
+        
+        return df
+
+    def _add_season_feature(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Add season_num column based on month.
+        Winter: 1 (Dec, Jan, Feb), Spring: 2 (Mar, Apr, May), 
+        Summer: 3 (Jun, Jul, Aug), Fall: 4 (Sep, Oct, Nov)
+        """
+        logger.info("Adding season_num feature...")
+        
+        # Create season mapping
+        def get_season(month):
+            if month in [12, 1, 2]:
+                return 1  # Winter
+            elif month in [3, 4, 5]:
+                return 2  # Spring
+            elif month in [6, 7, 8]:
+                return 3  # Summer
+            elif month in [9, 10, 11]:
+                return 4  # Fall
+            else:
+                return np.nan
+        
+        # Apply season mapping only to records with valid months
+        df['season_num'] = df['month'].apply(get_season)
+        
+        season_counts = df['season_num'].value_counts().sort_index()
+        logger.info(f"Season distribution: {dict(season_counts)}")
         
         return df
 

@@ -1,0 +1,140 @@
+{
+  "versions": [
+    {
+      "id": "v1_20250630_213413",
+      "timestamp": "2025-06-30T21:34:13.184290",
+      "data_hash": "f012855b5eb21fc91365ffd26ad07a6f",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v1_20250630_213413",
+        "training_metrics": {
+          "accuracy": 0.25,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    },
+    {
+      "id": "v2_20250630_214658",
+      "timestamp": "2025-06-30T21:46:58.661293",
+      "data_hash": "99af1dc0d8ac0cc156460cc6da9dd605",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v2_20250630_214658",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    },
+    {
+      "id": "v3_20250630_215755",
+      "timestamp": "2025-06-30T21:57:55.150437",
+      "data_hash": "5c9b4f2311f0c6721c03b2b2eedd1fa1",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v3_20250630_215755",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    },
+    {
+      "id": "v4_20250630_222048",
+      "timestamp": "2025-06-30T22:20:48.832841",
+      "data_hash": "bebc365f731e381389977f46c08f20ff",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v4_20250630_222048",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    },
+    {
+      "id": "v5_20250630_222901",
+      "timestamp": "2025-06-30T22:29:01.856110",
+      "data_hash": "ed83772607b59ddd8b49b5fa0d80d3c3",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v5_20250630_222901",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    }
+  ],
+  "current": "v5_20250630_222901"
+}

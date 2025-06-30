@@ -86,4 +86,72 @@ def validate_data(df: pd.DataFrame, expected_columns: List[str] = None) -> bool:
         logger.warning(f"Columns with all null values: {null_columns}")
     
     logger.info("Data validation passed")
+    return True
+
+
+def validate_inference_data(df: pd.DataFrame, required_columns: List[str]) -> bool:
+    """
+    Validate inference input data.
+    
+    Args:
+        df: DataFrame to validate
+        required_columns: List of required column names for inference
+        
+    Returns:
+        True if validation passes, False otherwise
+    """
+    logger.info("Validating inference data...")
+    
+    # Check if DataFrame is empty
+    if len(df) == 0:
+        logger.error("Inference DataFrame is empty")
+        return False
+    
+    # Check for required columns
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        logger.error(f"Missing required columns for inference: {missing_columns}")
+        return False
+    
+    # Validate coordinate data
+    if 'decimalLatitude' in df.columns and 'decimalLongitude' in df.columns:
+        # Check for valid coordinate ranges
+        invalid_lat = df['decimalLatitude'][(df['decimalLatitude'] < -90) | (df['decimalLatitude'] > 90)]
+        if len(invalid_lat) > 0:
+            logger.error(f"Invalid latitudes found: {len(invalid_lat)} values outside -90 to 90")
+            return False
+        
+        invalid_lon = df['decimalLongitude'][(df['decimalLongitude'] < -180) | (df['decimalLongitude'] > 180)]
+        if len(invalid_lon) > 0:
+            logger.error(f"Invalid longitudes found: {len(invalid_lon)} values outside -180 to 180")
+            return False
+    
+    # Validate temporal data if present
+    temporal_columns = ['year', 'month', 'day']
+    for col in temporal_columns:
+        if col in df.columns:
+            # Check for null values
+            null_count = df[col].isnull().sum()
+            if null_count > 0:
+                logger.error(f"Column '{col}' has {null_count} null values")
+                return False
+            
+            # Check for valid ranges
+            if col == 'year':
+                invalid_years = df[col][(df[col] < 1800) | (df[col] > 2025)]
+                if len(invalid_years) > 0:
+                    logger.error(f"Column '{col}' has {len(invalid_years)} invalid years (outside 1800-2025)")
+                    return False
+            elif col == 'month':
+                invalid_months = df[col][(df[col] < 1) | (df[col] > 12)]
+                if len(invalid_months) > 0:
+                    logger.error(f"Column '{col}' has {len(invalid_months)} invalid months (outside 1-12)")
+                    return False
+            elif col == 'day':
+                invalid_days = df[col][(df[col] < 1) | (df[col] > 31)]
+                if len(invalid_days) > 0:
+                    logger.error(f"Column '{col}' has {len(invalid_days)} invalid days (outside 1-31)")
+                    return False
+    
+    logger.info("Inference data validation passed")
     return True 

@@ -1,0 +1,235 @@
+{
+  "models": [
+    {
+      "version_id": "huckleberry_model_dev_v1_20250630_213413",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-06-30T21:34:13.173358",
+      "file_path": "models\\huckleberry_model_dev_v1_20250630_213413.joblib",
+      "metrics": {
+        "accuracy": 0.25,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "month",
+        "day",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "gridmet_lat",
+        "gridmet_lon",
+        "air_temperature",
+        "specific_humidity",
+        "relative_humidity",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "0": 12,
+          "1": 4
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v2_20250630_214658",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-06-30T21:46:58.651737",
+      "file_path": "models\\huckleberry_model_dev_v2_20250630_214658.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "month",
+        "day",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "gridmet_lat",
+        "gridmet_lon",
+        "air_temperature",
+        "specific_humidity",
+        "relative_humidity",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v3_20250630_215755",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-06-30T21:57:55.139926",
+      "file_path": "models\\huckleberry_model_dev_v3_20250630_215755.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "month",
+        "day",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "gridmet_lat",
+        "gridmet_lon",
+        "air_temperature",
+        "specific_humidity",
+        "relative_humidity",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v4_20250630_222048",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-06-30T22:20:48.822378",
+      "file_path": "models\\huckleberry_model_dev_v4_20250630_222048.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "month",
+        "day",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "gridmet_lat",
+        "gridmet_lon",
+        "air_temperature",
+        "specific_humidity",
+        "relative_humidity",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v5_20250630_222901",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-06-30T22:29:01.844347",
+      "file_path": "models\\huckleberry_model_dev_v5_20250630_222901.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "month",
+        "day",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "gridmet_lat",
+        "gridmet_lon",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 16
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    }
+  ],
+  "current": "huckleberry_model_dev_v5_20250630_222901"
+}

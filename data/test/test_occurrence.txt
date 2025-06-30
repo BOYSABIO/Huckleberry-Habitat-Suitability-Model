@@ -1,0 +1,11 @@
+gbifID	decimalLatitude	decimalLongitude	year	month	day	verbatimLocality	locality	stateProvince	country
+0	45.0	-116.0	2020	6	15	Test location	Test locality	Idaho	United States
+1	45.1	-115.9	2020	6	15	Test location	Test locality	Idaho	United States
+2	45.2	-115.8	2020	6	15	Test location	Test locality	Idaho	United States
+3	45.3	-115.7	2020	6	15	Test location	Test locality	Idaho	United States
+4	45.4	-115.6	2020	6	15	Test location	Test locality	Idaho	United States
+5	45.5	-115.5	2020	6	15	Test location	Test locality	Idaho	United States
+6	45.6	-115.4	2020	6	15	Test location	Test locality	Idaho	United States
+7	45.7	-115.3	2020	6	15	Test location	Test locality	Idaho	United States
+8	45.8	-115.2	2020	6	15	Test location	Test locality	Idaho	United States
+9	45.9	-115.1	2020	6	15	Test location	Test locality	Idaho	United States

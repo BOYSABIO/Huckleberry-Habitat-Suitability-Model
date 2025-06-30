@@ -91,15 +91,57 @@ class HuckleberryPredictor:
         if target_col not in data.columns:
             raise ValueError(f"Target column '{target_col}' not found in data")
         
+        # Columns to exclude from training (keep for inference)
+        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        
         # Separate features and target
-        features = data.drop(target_col, axis=1)
+        features = data.drop([target_col] + 
+                           [col for col in exclude_cols if col in data.columns], 
+                           axis=1)
         target = data[target_col]
         
         # Store feature names for later use
         if self.feature_names is None:
             self.feature_names = features.columns.tolist()
         
+        logger.info(f"Training features: {len(self.feature_names)} columns")
+        logger.info(f"Excluded columns: "
+                   f"{[col for col in exclude_cols if col in data.columns]}")
+        
         return features, target
+    
+    def prepare_inference_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Prepare data for inference, ensuring it has the same features as training.
+        
+        Args:
+            data: Input DataFrame for inference
+            
+        Returns:
+            DataFrame with features ready for prediction
+        """
+        if self.feature_names is None:
+            raise ValueError("Model must be fitted before preparing inference data")
+        
+        # Columns to exclude from inference features
+        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        
+        # Remove excluded columns if they exist
+        inference_data = data.drop([col for col in exclude_cols 
+                                  if col in data.columns], axis=1)
+        
+        # Ensure all required features are present
+        missing_features = set(self.feature_names) - set(inference_data.columns)
+        if missing_features:
+            raise ValueError(f"Missing required features for inference: "
+                           f"{missing_features}")
+        
+        # Select only the features used in training
+        inference_data = inference_data[self.feature_names]
+        
+        logger.info(f"Inference data prepared: {inference_data.shape}")
+        
+        return inference_data
     
     def fit(self, data: pd.DataFrame, target_col: str = 'occurrence', 
             test_size: float = 0.2, random_state: int = 42) -> Dict[str, float]:
@@ -161,17 +203,14 @@ class HuckleberryPredictor:
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
-        # Scale features
-        data_scaled = self.scaler.transform(data)
-        
-        # Make predictions
-        predictions = self.model.predict(data_scaled)
-        
-        return predictions
+        # Prepare the data for inference (remove excluded columns, select features)
+        data_prepared = self.prepare_inference_data(data)
+        data_scaled = self.scaler.transform(data_prepared)
+        return self.model.predict(data_scaled)
     
     def predict_proba(self, data: pd.DataFrame) -> np.ndarray:
         """
-        Get prediction probabilities.
+        Get prediction probabilities for new data.
         
         Args:
             data: Input data for prediction
@@ -182,8 +221,9 @@ class HuckleberryPredictor:
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
-        # Scale features
-        data_scaled = self.scaler.transform(data)
+        # Prepare the data for inference (remove excluded columns, select features)
+        data_prepared = self.prepare_inference_data(data)
+        data_scaled = self.scaler.transform(data_prepared)
         
         # Get probabilities
         probabilities = self.model.predict_proba(data_scaled)
@@ -293,10 +333,8 @@ class RandomForestPredictor:
         Returns:
             Dictionary containing training metrics
         """
-        features = data.drop(target_col, axis=1)
-        target = data[target_col]
-        
-        self.feature_names = features.columns.tolist()
+        # Use the same prepare_data method as the main predictor
+        features, target = self.prepare_data(data, target_col)
         
         # Split data
         X_train, X_test, y_train, y_test = train_test_split(
@@ -324,12 +362,82 @@ class RandomForestPredictor:
         
         return metrics
     
+    def prepare_data(self, data: pd.DataFrame, 
+                    target_col: str = 'occurrence') -> Tuple[pd.DataFrame, pd.Series]:
+        """
+        Prepare data for training/prediction.
+        
+        Args:
+            data: Input DataFrame
+            target_col: Name of the target column
+            
+        Returns:
+            Tuple of (features, target)
+        """
+        # Ensure target column exists
+        if target_col not in data.columns:
+            raise ValueError(f"Target column '{target_col}' not found in data")
+        
+        # Columns to exclude from training (keep for inference)
+        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        
+        # Separate features and target
+        features = data.drop([target_col] + 
+                           [col for col in exclude_cols if col in data.columns], 
+                           axis=1)
+        target = data[target_col]
+        
+        # Store feature names for later use
+        if self.feature_names is None:
+            self.feature_names = features.columns.tolist()
+        
+        logger.info(f"Training features: {len(self.feature_names)} columns")
+        logger.info(f"Excluded columns: "
+                   f"{[col for col in exclude_cols if col in data.columns]}")
+        
+        return features, target
+    
+    def prepare_inference_data(self, data: pd.DataFrame) -> pd.DataFrame:
+        """
+        Prepare data for inference, ensuring it has the same features as training.
+        
+        Args:
+            data: Input DataFrame for inference
+            
+        Returns:
+            DataFrame with features ready for prediction
+        """
+        if self.feature_names is None:
+            raise ValueError("Model must be fitted before preparing inference data")
+        
+        # Columns to exclude from inference features
+        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        
+        # Remove excluded columns if they exist
+        inference_data = data.drop([col for col in exclude_cols 
+                                  if col in data.columns], axis=1)
+        
+        # Ensure all required features are present
+        missing_features = set(self.feature_names) - set(inference_data.columns)
+        if missing_features:
+            raise ValueError(f"Missing required features for inference: "
+                           f"{missing_features}")
+        
+        # Select only the features used in training
+        inference_data = inference_data[self.feature_names]
+        
+        logger.info(f"Inference data prepared: {inference_data.shape}")
+        
+        return inference_data
+    
     def predict(self, data: pd.DataFrame) -> np.ndarray:
         """Make predictions on new data."""
         if not self.is_fitted:
             raise ValueError("Model must be fitted before making predictions")
         
-        data_scaled = self.scaler.transform(data)
+        # Prepare the data for inference (remove excluded columns, select features)
+        data_prepared = self.prepare_inference_data(data)
+        data_scaled = self.scaler.transform(data_prepared)
         return self.model.predict(data_scaled)
     
     def get_feature_importance(self) -> pd.DataFrame:
