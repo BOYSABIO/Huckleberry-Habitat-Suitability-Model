@@ -2,7 +2,7 @@
 
 A comprehensive MLOps pipeline for predicting huckleberry habitat suitability using environmental data, machine learning, and geospatial analysis.
 
-## 🎯 Project Overview
+## Project Overview
 
 This project analyzes and predicts huckleberry habitat suitability by combining:
 - **Historical occurrence data** from GBIF (Global Biodiversity Information Facility)
@@ -13,7 +13,7 @@ This project analyzes and predicts huckleberry habitat suitability by combining:
 
 The pipeline automatically extracts environmental data, generates pseudo-absences for balanced training, and provides both training and inference capabilities with organized outputs.
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 Capstone-Microsoft/
@@ -40,7 +40,7 @@ Capstone-Microsoft/
 └── tests/                      # Test files
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -93,14 +93,14 @@ pip install -r requirements.txt
 python -m src.main train --environment development
 ```
 
-## 📊 Data Sources
+## Data Sources
 
 - **GBIF Occurrence Data**: [Vaccinium membranaceum](https://www.gbif.org/species/9060377)
 - **GridMET Climate Data**: [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/gridmet)
 - **Elevation Data**: [Open-Elevation API](https://api.open-elevation.com/)
 - **Soil Data**: [SoilGrids API](https://www.isric.org/explore/soilgrids)
 
-## 🔧 Usage
+## Usage
 
 ### Training Pipeline
 
@@ -156,7 +156,7 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 - **`testing`**: Uses test data, minimal models for quick testing
 - **`test_sample`**: Uses actual test sample data
 
-## 📁 Outputs
+## Outputs
 
 ### Training Outputs
 - **Processed Data**: `data/processed/huckleberry_processed.csv`
@@ -168,7 +168,7 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 - **Predictions CSV**: `outputs/predictions/inference_predictions.csv`
 - **Interactive Map**: `outputs/maps/prediction_map.html` (if enabled)
 
-## 🔍 Features
+## Features
 
 ### Environmental Variables
 - **Climate**: Temperature, precipitation, humidity, wind speed, solar radiation
@@ -188,7 +188,7 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 - **Data Validation**: Ensures data quality at each step
 - **Error Handling**: Robust error handling and recovery
 
-## 🛠️ Configuration
+## Configuration
 
 ### Environment Settings
 
@@ -221,7 +221,7 @@ The pipeline uses environment-specific configurations:
 - Automatic hyperparameter optimization
 ```
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 
@@ -236,7 +236,7 @@ pytest tests/test_basic.py
 pytest --cov=src tests/
 ```
 
-## 📈 Performance
+## Performance
 
 ### Model Performance
 - **Accuracy**: Typically 85-95% on test data
@@ -244,11 +244,12 @@ pytest --cov=src tests/
 - **Cross-validation**: Robust performance evaluation
 
 ### Pipeline Performance
+- **Data Cleaning & Merging**: 5+ hours (depending on data size)
 - **Training**: 5-15 minutes (depending on data size)
 - **Inference**: 30-60 seconds per coordinate set
 - **Environmental Extraction**: 2-5 seconds per coordinate
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -277,7 +278,7 @@ Check pipeline logs in `logs/` directory:
 - `pipeline_prod.log` - Production environment
 - `pipeline_test.log` - Testing environment
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch
@@ -285,11 +286,7 @@ Check pipeline logs in `logs/` directory:
 4. Add tests
 5. Submit a pull request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **GBIF** for occurrence data
 - **Microsoft Planetary Computer** for climate data
@@ -297,13 +294,10 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **SoilGrids** for soil data
 - **Scikit-learn** for machine learning tools
 
-## 📞 Support
+## Support
 
 For questions or issues:
 1. Check the logs in `logs/` directory
 2. Review the documentation in `docs/`
 3. Open an issue on GitHub
 
----
-
-**Note**: This pipeline is designed for research and educational purposes. Always validate predictions with field observations before making management decisions. 
