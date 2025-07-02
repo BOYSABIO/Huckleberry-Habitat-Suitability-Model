@@ -258,30 +258,27 @@ class DataPreprocessor:
     def _add_season_feature(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         Add season_num column based on month.
-        Winter: 1 (Dec, Jan, Feb), Spring: 2 (Mar, Apr, May), 
-        Summer: 3 (Jun, Jul, Aug), Fall: 4 (Sep, Oct, Nov)
+        Winter: 0 (Dec, Jan, Feb), Spring: 1 (Mar, Apr, May), 
+        Summer: 2 (Jun, Jul, Aug), Fall: 3 (Sep, Oct, Nov)
         """
         logger.info("Adding season_num feature...")
         
-        # Create season mapping
-        def get_season(month):
+        # Direct mapping from month to season_num
+        def get_season_num(month):
             if month in [12, 1, 2]:
-                return 1  # Winter
+                return 0  # Winter
             elif month in [3, 4, 5]:
-                return 2  # Spring
+                return 1  # Spring
             elif month in [6, 7, 8]:
-                return 3  # Summer
+                return 2  # Summer
             elif month in [9, 10, 11]:
-                return 4  # Fall
+                return 3  # Fall
             else:
                 return np.nan
         
-        # Apply season mapping only to records with valid months
-        df['season_num'] = df['month'].apply(get_season)
-        
+        df['season_num'] = df['month'].apply(get_season_num)
         season_counts = df['season_num'].value_counts().sort_index()
         logger.info(f"Season distribution: {dict(season_counts)}")
-        
         return df
 
     def _remove_duplicates(self, df: pd.DataFrame) -> pd.DataFrame:

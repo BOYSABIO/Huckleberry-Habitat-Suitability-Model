@@ -63,7 +63,8 @@ def run_inference_pipeline(
     coordinates: list,
     environment: str = None,
     create_map: bool = True,
-    confidence_threshold: float = 0.8
+    confidence_threshold: float = 0.8,
+    gridmet_date: str = None
 ) -> dict:
     """
     Run the inference pipeline.
@@ -73,14 +74,25 @@ def run_inference_pipeline(
         environment: Environment name
         create_map: Whether to create a prediction map
         confidence_threshold: Minimum confidence for suitable habitat
+        gridmet_date: Specific date for GridMET data (YYYY-MM-DD format)
         
     Returns:
         Inference results
     """
     settings, logger = setup_environment(environment)
     
-    logger.info("Starting inference pipeline")
+    # Configure GridMET date settings
+    if gridmet_date:
+        settings.inference.use_latest_gridmet = False
+        settings.inference.gridmet_date = gridmet_date
+        logger.info(f"Using specified GridMET date: {gridmet_date}")
+    else:
+        settings.inference.use_latest_gridmet = True
+        settings.inference.gridmet_date = None
+        logger.info("Using latest available GridMET data")
     
+    logger.info("Starting inference pipeline")
+
     # Initialize and run inference pipeline
     inference_pipeline = InferencePipeline(settings)
     results = inference_pipeline.run(
@@ -98,7 +110,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Huckleberry Habitat Prediction Pipeline"
     )
-    
+
     # Add subparsers for different commands
     subparsers = parser.add_subparsers(dest='command', help='Available commands')
     
@@ -121,9 +133,9 @@ def main():
         help='Coordinates as lat1 lon1 lat2 lon2 ...'
     )
     infer_parser.add_argument(
-        '--dates',
-        nargs='+',
-        help='Dates for inference (optional, will use latest GridMET date if not provided)'
+        '--gridmet-date',
+        type=str,
+        help='Specific date for GridMET data (YYYY-MM-DD format, e.g., 2020-07-15)'
     )
     infer_parser.add_argument(
         '--environment',
@@ -173,10 +185,15 @@ def main():
                 coordinates=coord_tuples,
                 environment=args.environment,
                 create_map=not args.no_map,
-                confidence_threshold=args.confidence_threshold
+                confidence_threshold=args.confidence_threshold,
+                gridmet_date=args.gridmet_date
             )
             
             print("✅ Inference completed successfully!")
+            if args.gridmet_date:
+                print(f"GridMET date used: {args.gridmet_date}")
+            else:
+                print("GridMET date used: Latest available")
             print(f"Total coordinates: {results['total_coordinates']}")
             print(f"Valid coordinates: {results['valid_coordinates']}")
             print(f"Suitable habitat count: {results['suitable_habitat_count']}")

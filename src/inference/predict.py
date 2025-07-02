@@ -86,8 +86,8 @@ def prepare_inference_data(coordinates_df: pd.DataFrame,
     
     Args:
         coordinates_df: DataFrame with decimalLatitude and decimalLongitude columns
-        target_date: Date for environmental data extraction
-        use_latest_gridmet: Whether to use latest available GridMET data
+        target_date: Date for environmental data extraction (if None, uses latest)
+        use_latest_gridmet: Whether to use latest available GridMET data (deprecated, use target_date instead)
     
     Returns:
         DataFrame ready for inference with same columns as training data
@@ -97,13 +97,6 @@ def prepare_inference_data(coordinates_df: pd.DataFrame,
     # Create a copy to avoid modifying the original
     inference_df = coordinates_df.copy()
     
-    # Add required columns for environmental extraction
-    if target_date is None:
-        # Use latest available date (you might want to make this configurable)
-        target_date = datetime(2020, 7, 15)  # Example date
-    
-    inference_df['datetime'] = target_date
-    
     # Add dummy columns required by environmental extractor
     inference_df['countryCode'] = 'US'
     inference_df['stateProvince'] = 'Unknown'
@@ -112,9 +105,9 @@ def prepare_inference_data(coordinates_df: pd.DataFrame,
     # Extract environmental data
     env_extractor = EnvironmentalDataExtractor()
     
-    # Extract GridMET data
+    # Extract GridMET data with target date
     logger.info("Extracting GridMET data...")
-    inference_df = env_extractor.extract_gridmet_data(inference_df)
+    inference_df = env_extractor.extract_gridmet_data(inference_df, target_date=target_date)
     
     if len(inference_df) == 0:
         raise ValueError("No coordinates within GridMET bounds")

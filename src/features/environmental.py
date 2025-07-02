@@ -60,12 +60,13 @@ class EnvironmentalDataExtractor:
             logger.error(f"❌ Failed to load GridMET dataset: {e}")
             raise
     
-    def extract_gridmet_data(self, df):
+    def extract_gridmet_data(self, df, target_date=None):
         """
         Extract GridMET climate data for each location and date.
         
         Args:
             df: DataFrame with decimalLatitude, decimalLongitude, and datetime columns
+            target_date: Specific date to use for GridMET data (if None, uses datetime column or latest)
             
         Returns:
             DataFrame with GridMET data added (only records within bounds and with valid data)
@@ -86,8 +87,20 @@ class EnvironmentalDataExtractor:
         # Filter to records within GridMET bounds
         df_filtered = df.copy()
         
-        # Handle datetime column - if not present, use latest available date
-        if 'datetime' not in df_filtered.columns:
+        # Handle datetime column - prioritize target_date if provided
+        if target_date is not None:
+            target_date = pd.to_datetime(target_date)
+            logger.info(f"Using specified target date: {target_date}")
+            
+            # Validate target date is within GridMET bounds
+            if target_date < time_min or target_date > time_max:
+                logger.warning(f"Target date {target_date} is outside GridMET time range. "
+                             f"Using latest available date instead.")
+                target_date = pd.to_datetime(ds.time.values.max())
+                logger.info(f"Using latest GridMET date: {target_date}")
+            
+            df_filtered['datetime'] = target_date
+        elif 'datetime' not in df_filtered.columns:
             logger.info("No datetime column provided, using latest available GridMET date")
             latest_date = pd.to_datetime(ds.time.values.max())
             df_filtered['datetime'] = latest_date

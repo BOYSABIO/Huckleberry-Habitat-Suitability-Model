@@ -144,8 +144,16 @@ class InferencePipeline:
         """Extract environmental data for inference coordinates."""
         self.logger.info("Extracting environmental data")
         
+        # Determine target date for GridMET data
+        target_date = None
+        if not self.settings.inference.use_latest_gridmet and self.settings.inference.gridmet_date:
+            target_date = self.settings.inference.gridmet_date
+            self.logger.info(f"Using specified GridMET date: {target_date}")
+        else:
+            self.logger.info("Using latest available GridMET data")
+        
         # Extract GridMET data
-        df_with_gridmet = self.env_extractor.extract_gridmet_data(df)
+        df_with_gridmet = self.env_extractor.extract_gridmet_data(df, target_date=target_date)
         self.logger.info(f"Records with GridMET data: {len(df_with_gridmet)}/{len(df)}")
         
         if len(df_with_gridmet) == 0:
@@ -164,12 +172,16 @@ class InferencePipeline:
             df_with_soil['day'] = df_with_soil['datetime'].dt.day
             
             # Add season_num feature (same logic as training pipeline)
-            df_with_soil['season_num'] = df_with_soil['month'].apply(
-                lambda m: 1 if m in [12, 1, 2] else  # Winter
-                2 if m in [3, 4, 5] else  # Spring
-                3 if m in [6, 7, 8] else  # Summer
-                4  # Fall (9, 10, 11)
-            )
+            def month_to_season_num(month):
+                if month in [12, 1, 2]:
+                    return 0  # Winter
+                elif month in [3, 4, 5]:
+                    return 1  # Spring
+                elif month in [6, 7, 8]:
+                    return 2  # Summer
+                else:
+                    return 3  # Fall
+            df_with_soil['season_num'] = df_with_soil['month'].apply(month_to_season_num)
             self.logger.info(f"Date components and season extracted from GridMET datetime")
         
         self.logger.info(f"Environmental data extraction complete: {df_with_soil.shape}")

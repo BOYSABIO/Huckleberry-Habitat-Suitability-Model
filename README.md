@@ -134,6 +134,15 @@ Make predictions on new coordinates:
 # Basic inference (uses latest GridMET date)
 python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --environment development
 
+# Specify a particular date for GridMET data
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-07-15 --environment development
+
+# Test different seasons
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-01-15 --environment development  # Winter
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-04-15 --environment development  # Spring
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-07-15 --environment development  # Summer
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-10-15 --environment development  # Fall
+
 # With custom confidence threshold
 python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --environment development --confidence-threshold 0.6
 
@@ -143,11 +152,17 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 
 **Inference Process:**
 1. Validates input coordinates
-2. Automatically uses latest available GridMET date
+2. Uses specified GridMET date or latest available date (default)
 3. Extracts environmental data for coordinates
 4. Makes predictions using trained model
 5. Saves results to `outputs/predictions/inference_predictions.csv`
 6. Creates interactive map in `outputs/maps/prediction_map.html`
+
+**Date Specification:**
+- Use `--gridmet-date YYYY-MM-DD` to specify a particular date for climate data
+- Valid date range: 1979-01-01 to approximately 2020-12-31
+- If no date specified, uses latest available GridMET data
+- Invalid dates automatically fall back to latest available data
 
 ### Environment Options
 
@@ -187,6 +202,7 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 - **Comprehensive Logging**: Detailed pipeline execution logs
 - **Data Validation**: Ensures data quality at each step
 - **Error Handling**: Robust error handling and recovery
+- **Date Specification**: Specify particular dates for GridMET climate data to test seasonal variations
 
 ## Configuration
 

@@ -50,7 +50,7 @@ def _get_development_settings() -> Settings:
             model_name="huckleberry_model_dev"
         ),
         inference=InferenceSettings(
-            model_file_path="models/random_forest_1.joblib"
+            model_file_path="models/random_forest_improved.joblib"
         ),
         logging=LoggingSettings(
             level="DEBUG",

@@ -63,6 +63,10 @@ class InferenceSettings:
     # Model loading
     model_file_path: Optional[str] = None  # Specific model file to use
     
+    # GridMET date settings
+    use_latest_gridmet: bool = True  # Use latest available GridMET data
+    gridmet_date: Optional[str] = None  # Specific date for GridMET data (YYYY-MM-DD format)
+    
     def __post_init__(self):
         if self.required_columns is None:
             self.required_columns = [

@@ -91,8 +91,12 @@ class HuckleberryPredictor:
         if target_col not in data.columns:
             raise ValueError(f"Target column '{target_col}' not found in data")
         
-        # Columns to exclude from training (keep for inference)
-        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        # Columns to exclude from training (matching improved notebook model)
+        exclude_cols = [
+            'gbifID', 'gridmet_lat', 'gridmet_lon', 'gridmet_date', 
+            'decimalLatitude', 'decimalLongitude', 'datetime', 'parsed_datetime',
+            'season', 'month', 'day'
+        ]
         
         # Separate features and target
         features = data.drop([target_col] + 
@@ -123,8 +127,12 @@ class HuckleberryPredictor:
         if self.feature_names is None:
             raise ValueError("Model must be fitted before preparing inference data")
         
-        # Columns to exclude from inference features
-        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        # Columns to exclude from inference features (matching improved notebook model)
+        exclude_cols = [
+            'gbifID', 'gridmet_lat', 'gridmet_lon', 'gridmet_date', 
+            'decimalLatitude', 'decimalLongitude', 'datetime', 'parsed_datetime',
+            'season', 'month', 'day'
+        ]
         
         # Remove excluded columns if they exist
         inference_data = data.drop([col for col in exclude_cols 
@@ -378,8 +386,12 @@ class RandomForestPredictor:
         if target_col not in data.columns:
             raise ValueError(f"Target column '{target_col}' not found in data")
         
-        # Columns to exclude from training (keep for inference)
-        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        # Columns to exclude from training (matching improved notebook model)
+        exclude_cols = [
+            'gbifID', 'gridmet_lat', 'gridmet_lon', 'gridmet_date', 
+            'decimalLatitude', 'decimalLongitude', 'datetime', 'parsed_datetime',
+            'season', 'month', 'day'
+        ]
         
         # Separate features and target
         features = data.drop([target_col] + 
@@ -410,8 +422,12 @@ class RandomForestPredictor:
         if self.feature_names is None:
             raise ValueError("Model must be fitted before preparing inference data")
         
-        # Columns to exclude from inference features
-        exclude_cols = ['gbifID', 'decimalLatitude', 'decimalLongitude', 'datetime', 'gridmet_date']
+        # Columns to exclude from inference features (matching improved notebook model)
+        exclude_cols = [
+            'gbifID', 'gridmet_lat', 'gridmet_lon', 'gridmet_date', 
+            'decimalLatitude', 'decimalLongitude', 'datetime', 'parsed_datetime',
+            'season', 'month', 'day'
+        ]
         
         # Remove excluded columns if they exist
         inference_data = data.drop([col for col in exclude_cols 
