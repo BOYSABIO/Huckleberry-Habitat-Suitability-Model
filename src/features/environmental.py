@@ -73,114 +73,119 @@ class EnvironmentalDataExtractor:
         """
         logger.info("🌤️ Extracting GridMET climate data...")
         
-        # Load GridMET dataset
-        ds = self.load_gridmet_dataset()
-        
-        # Get dataset bounds
-        lat_min, lat_max = ds.lat.values.min(), ds.lat.values.max()
-        lon_min, lon_max = ds.lon.values.min(), ds.lon.values.max()
-        time_min, time_max = pd.to_datetime(ds.time.values.min()), pd.to_datetime(ds.time.values.max())
-        
-        logger.info(f"GridMET bounds: Lat {lat_min:.3f}-{lat_max:.3f}, Lon {lon_min:.3f}-{lon_max:.3f}")
-        logger.info(f"Time range: {time_min.date()} to {time_max.date()}")
-        
-        # Filter to records within GridMET bounds
-        df_filtered = df.copy()
-        
-        # Handle datetime column - prioritize target_date if provided
-        if target_date is not None:
-            target_date = pd.to_datetime(target_date)
-            logger.info(f"Using specified target date: {target_date}")
+        try:
+            # Load GridMET dataset
+            ds = self.load_gridmet_dataset()
             
-            # Validate target date is within GridMET bounds
-            if target_date < time_min or target_date > time_max:
-                logger.warning(f"Target date {target_date} is outside GridMET time range. "
-                             f"Using latest available date instead.")
-                target_date = pd.to_datetime(ds.time.values.max())
-                logger.info(f"Using latest GridMET date: {target_date}")
+            # Get dataset bounds
+            lat_min, lat_max = ds.lat.values.min(), ds.lat.values.max()
+            lon_min, lon_max = ds.lon.values.min(), ds.lon.values.max()
+            time_min, time_max = pd.to_datetime(ds.time.values.min()), pd.to_datetime(ds.time.values.max())
             
-            df_filtered['datetime'] = target_date
-        elif 'datetime' not in df_filtered.columns:
-            logger.info("No datetime column provided, using latest available GridMET date")
-            latest_date = pd.to_datetime(ds.time.values.max())
-            df_filtered['datetime'] = latest_date
-            logger.info(f"Using latest GridMET date: {latest_date}")
-        else:
-            df_filtered['datetime'] = pd.to_datetime(df_filtered['datetime'])
-        
-        # Spatial filtering
-        spatial_mask = (
-            (df_filtered['decimalLatitude'] >= lat_min) &
-            (df_filtered['decimalLatitude'] <= lat_max) &
-            (df_filtered['decimalLongitude'] >= lon_min) &
-            (df_filtered['decimalLongitude'] <= lon_max)
-        )
-        
-        # Temporal filtering (only if datetime was provided)
-        if 'datetime' in df.columns:
-            temporal_mask = (
-                (df_filtered['datetime'] >= time_min) &
-                (df_filtered['datetime'] <= time_max)
+            logger.info(f"GridMET bounds: Lat {lat_min:.3f}-{lat_max:.3f}, Lon {lon_min:.3f}-{lon_max:.3f}")
+            logger.info(f"Time range: {time_min.date()} to {time_max.date()}")
+            
+            # Filter to records within GridMET bounds
+            df_filtered = df.copy()
+            
+            # Handle datetime column - prioritize target_date if provided
+            if target_date is not None:
+                target_date = pd.to_datetime(target_date)
+                logger.info(f"Using specified target date: {target_date}")
+                
+                # Validate target date is within GridMET bounds
+                if target_date < time_min or target_date > time_max:
+                    logger.warning(f"Target date {target_date} is outside GridMET time range. "
+                                 f"Using latest available date instead.")
+                    target_date = pd.to_datetime(ds.time.values.max())
+                    logger.info(f"Using latest GridMET date: {target_date}")
+                
+                df_filtered['datetime'] = target_date
+            elif 'datetime' not in df_filtered.columns:
+                logger.info("No datetime column provided, using latest available GridMET date")
+                latest_date = pd.to_datetime(ds.time.values.max())
+                df_filtered['datetime'] = latest_date
+                logger.info(f"Using latest GridMET date: {latest_date}")
+            else:
+                df_filtered['datetime'] = pd.to_datetime(df_filtered['datetime'])
+            
+            # Spatial filtering
+            spatial_mask = (
+                (df_filtered['decimalLatitude'] >= lat_min) &
+                (df_filtered['decimalLatitude'] <= lat_max) &
+                (df_filtered['decimalLongitude'] >= lon_min) &
+                (df_filtered['decimalLongitude'] <= lon_max)
             )
-            valid_mask = spatial_mask & temporal_mask
-        else:
-            # If using latest date, only check spatial bounds
-            valid_mask = spatial_mask
-        
-        df_valid = df_filtered[valid_mask].copy()
-        
-        logger.info(f"Records within GridMET bounds: {len(df_valid)}/{len(df)}")
-        
-        if len(df_valid) == 0:
-            logger.warning("⚠️ No records within GridMET bounds")
-            return pd.DataFrame()  # Return empty DataFrame instead of original
-        
-        # Extract data for each record
-        gridmet_data = []
-        
-        for idx, row in tqdm(df_valid.iterrows(), total=len(df_valid), desc="Extracting GridMET data"):
-            try:
-                lat = row['decimalLatitude']
-                lon = row['decimalLongitude']
-                date = row['datetime']
-                
-                # Find nearest grid points
-                lat_idx = np.abs(ds.lat.values - lat).argmin()
-                lon_idx = np.abs(ds.lon.values - lon).argmin()
-                time_idx = np.abs(ds.time.values - np.datetime64(date)).argmin()
-                
-                # Extract data
-                data_cube = ds[self.gridmet_vars].isel(
-                    lat=lat_idx, lon=lon_idx, time=time_idx
-                ).compute()
-                
-                # Check for NaN in any variable
-                values = {var: data_cube[var].values.item() for var in self.gridmet_vars}
-                if any(pd.isna(val) for val in values.values()):
-                    logger.warning(f"Skipping row {idx}: GridMET data contains NaN values.")
+            
+            # Temporal filtering (only if datetime was provided)
+            if 'datetime' in df.columns:
+                temporal_mask = (
+                    (df_filtered['datetime'] >= time_min) &
+                    (df_filtered['datetime'] <= time_max)
+                )
+                valid_mask = spatial_mask & temporal_mask
+            else:
+                # If using latest date, only check spatial bounds
+                valid_mask = spatial_mask
+            
+            df_valid = df_filtered[valid_mask].copy()
+            
+            logger.info(f"Records within GridMET bounds: {len(df_valid)}/{len(df)}")
+            
+            if len(df_valid) == 0:
+                logger.warning("⚠️ No records within GridMET bounds")
+                return pd.DataFrame()  # Return empty DataFrame instead of original
+            
+            # Extract data for each record
+            gridmet_data = []
+            
+            for idx, row in tqdm(df_valid.iterrows(), total=len(df_valid), desc="Extracting GridMET data"):
+                try:
+                    lat = row['decimalLatitude']
+                    lon = row['decimalLongitude']
+                    date = row['datetime']
+                    
+                    # Find nearest grid points
+                    lat_idx = np.abs(ds.lat.values - lat).argmin()
+                    lon_idx = np.abs(ds.lon.values - lon).argmin()
+                    time_idx = np.abs(ds.time.values - np.datetime64(date)).argmin()
+                    
+                    # Extract data
+                    data_cube = ds[self.gridmet_vars].isel(
+                        lat=lat_idx, lon=lon_idx, time=time_idx
+                    ).compute()
+                    
+                    # Check for NaN in any variable
+                    values = {var: data_cube[var].values.item() for var in self.gridmet_vars}
+                    if any(pd.isna(val) for val in values.values()):
+                        logger.warning(f"Skipping row {idx}: GridMET data contains NaN values.")
+                        continue
+                    
+                    # Create record with GridMET data
+                    record = row.to_dict()
+                    record.update({
+                        'gridmet_lat': ds.lat.values[lat_idx],
+                        'gridmet_lon': ds.lon.values[lon_idx],
+                        'gridmet_date': pd.to_datetime(ds.time.values[time_idx])
+                    })
+                    record.update(values)
+                    
+                    gridmet_data.append(record)
+                    
+                except Exception as e:
+                    logger.warning(f"Failed to extract GridMET data for row {idx}: {e}")
+                    # Skip this record entirely instead of adding it back without data
                     continue
-                
-                # Create record with GridMET data
-                record = row.to_dict()
-                record.update({
-                    'gridmet_lat': ds.lat.values[lat_idx],
-                    'gridmet_lon': ds.lon.values[lon_idx],
-                    'gridmet_date': pd.to_datetime(ds.time.values[time_idx])
-                })
-                record.update(values)
-                
-                gridmet_data.append(record)
-                
-            except Exception as e:
-                logger.warning(f"Failed to extract GridMET data for row {idx}: {e}")
-                # Skip this record entirely instead of adding it back without data
-                continue
-        
-        # Create enriched DataFrame
-        enriched_df = pd.DataFrame(gridmet_data)
-        
-        logger.info(f"✅ GridMET extraction complete: {len(enriched_df)} records (with valid data)")
-        return enriched_df
+            
+            # Create enriched DataFrame
+            enriched_df = pd.DataFrame(gridmet_data)
+            
+            logger.info(f"✅ GridMET extraction complete: {len(enriched_df)} records (with valid data)")
+            return enriched_df
+            
+        except Exception as e:
+            logger.error(f"❌ Failed to extract GridMET data: {e}")
+            raise
     
     def get_elevation(self, lat, lon):
         """Query Open-Elevation API for elevation data."""

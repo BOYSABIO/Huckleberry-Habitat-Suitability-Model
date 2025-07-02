@@ -9,6 +9,8 @@ import pandas as pd
 import numpy as np
 import logging
 from typing import Dict
+from sklearn.neighbors import BallTree
+from datetime import timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -290,36 +292,64 @@ class DataPreprocessor:
         return df
 
     def create_pseudo_absences(self, df: pd.DataFrame, ratio: float = 3.0) -> pd.DataFrame:
+        """
+        Create pseudo-absences using the improved algorithm from pseudoabsence.py.
+        """
         logger.info(f"Creating pseudo-absences with ratio {ratio}:1")
-        lat_min, lat_max = df['decimalLatitude'].min(), df['decimalLatitude'].max()
-        lon_min, lon_max = df['decimalLongitude'].min(), df['decimalLongitude'].max()
-        n_presences = len(df)
-        n_absences = int(n_presences * ratio)
+        
         np.random.seed(42)
-        pseudo_lats = np.random.uniform(lat_min, lat_max, n_absences)
-        pseudo_lons = np.random.uniform(lon_min, lon_max, n_absences)
-        pseudo_absences = pd.DataFrame({
-            'decimalLatitude': pseudo_lats,
-            'decimalLongitude': pseudo_lons,
-            'eventDate': df['eventDate'].sample(n=n_absences, replace=True).values,
-            'countryCode': 'US',
-            'stateProvince': 'Unknown',
-            'county': 'Unknown',
-            'locality': 'Pseudo-absence',
-            'verbatimLocality': 'Pseudo-absence',
-            'municipality': 'Unknown',
-            'year': df['year'].sample(n=n_absences, replace=True).values,
-            'month': df['month'].sample(n=n_absences, replace=True).values,
-            'day': df['day'].sample(n=n_absences, replace=True).values
-        })
+        df_copy = df.copy()
+        df_copy['occurrence'] = 1  # Ensure all are marked as occurrences
+
+        coords_rad = np.radians(df_copy[["decimalLatitude", "decimalLongitude"]].values)
+        tree = BallTree(coords_rad, metric="haversine")
+        buffer_rad = 5.0 / 6371  # 5km buffer, Earth's radius in km
+
+        num_absences = int(df_copy.shape[0] * ratio)
+        pseudo_points = []
+
+        lat_range = (df_copy["decimalLatitude"].min(), df_copy["decimalLatitude"].max())
+        lon_range = (df_copy["decimalLongitude"].min(), df_copy["decimalLongitude"].max())
+        date_range = (pd.to_datetime(df_copy["datetime"]).min(),
+                     pd.to_datetime(df_copy["datetime"]).max())
+
+        # Get list of columns to preserve structure
+        gridmet_columns = [col for col in df_copy.columns if col != "occurrence"]
+
+        attempts = 0
+        max_attempts = num_absences * 20
+        while len(pseudo_points) < num_absences and attempts < max_attempts:
+            lat = np.random.uniform(*lat_range)
+            lon = np.random.uniform(*lon_range)
+            coord_rad = np.radians([[lat, lon]])
+
+            dist, _ = tree.query(coord_rad, k=1)
+            if dist[0][0] >= buffer_rad:
+                random_date = (date_range[0] +
+                              timedelta(days=np.random.randint(
+                                  0, (date_range[1] - date_range[0]).days + 1)))
+                row = {
+                    "decimalLatitude": lat,
+                    "decimalLongitude": lon,
+                    "datetime": random_date.strftime("%Y-%m-%d"),
+                    "year": random_date.year,
+                    "month": random_date.month,
+                    "day": random_date.day,
+                    "occurrence": 0
+                }
+                # Fill rest of columns with NaN to match structure
+                for col in gridmet_columns:
+                    if col not in row:
+                        row[col] = np.nan
+                pseudo_points.append(row)
+            attempts += 1
+
+        pseudo_df = pd.DataFrame(pseudo_points)[df_copy.columns]  # reorder to match
+        combined_df = (pd.concat([df_copy, pseudo_df], ignore_index=True)
+                       .sample(frac=1, random_state=42)
+                       .reset_index(drop=True))
         
-        # Create datetime column from year, month, day
-        pseudo_absences['datetime'] = pd.to_datetime(pseudo_absences[['year', 'month', 'day']])
-        
-        df['occurrence'] = 1
-        pseudo_absences['occurrence'] = 0
-        combined_df = pd.concat([df, pseudo_absences], ignore_index=True)
-        logger.info(f"Created {n_absences} pseudo-absences, total dataset: {len(combined_df)} records")
+        logger.info(f"Created {len(pseudo_points)} pseudo-absences, total dataset: {len(combined_df)} records")
         return combined_df
 
     def get_cleaning_summary(self, original_df: pd.DataFrame, cleaned_df: pd.DataFrame) -> Dict:

@@ -27,14 +27,14 @@ Capstone-Microsoft/
 │   ├── maps/                   # HTML prediction maps
 │   └── predictions/            # CSV prediction results
 ├── src/                        # Main pipeline code
-│   ├── config/                 # Configuration management
+│   ├── config/                 # Configuration management (settings + environments)
 │   ├── data_load/              # Data loading utilities
-│   ├── data_preprocess/        # Data preprocessing
-│   ├── data_validation/        # Data validation
-│   ├── features/               # Feature engineering
-│   ├── models/                 # Model training and registry
+│   ├── data_preprocess/        # Data preprocessing (cleaning, geocoding, pseudo-absences)
+│   ├── data_validation/        # Data validation and quality checks
+│   ├── features/               # Feature engineering (environmental data extraction)
+│   ├── models/                 # Model training, registry, and feature analysis
 │   ├── pipelines/              # Training and inference pipelines
-│   └── utils/                  # Utilities and logging
+│   └── utils/                  # Utilities (logging, data versioning)
 ├── logs/                       # Pipeline logs
 ├── docs/                       # Documentation
 └── tests/                      # Test files
@@ -119,8 +119,8 @@ python -m src.main train --environment testing
 
 **Training Process:**
 1. Loads raw GBIF occurrence data
-2. Preprocesses and cleans the data
-3. Generates pseudo-absences for balanced training
+2. Preprocesses and cleans the data (including geocoding)
+3. Generates pseudo-absences for balanced training (using improved algorithm)
 4. Extracts environmental data (GridMET, elevation, soil)
 5. Trains Random Forest or Ensemble model
 6. Saves model to registry with versioning
@@ -196,32 +196,44 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 - **Ensemble**: Combines multiple models for better performance
 
 ### Pipeline Features
-- **Automatic Data Versioning**: Tracks all data transformations
+- **Modular Architecture**: Clean separation of concerns across 8 well-organized modules
+- **Configuration Management**: Environment-specific settings with validation
+- **Automatic Data Versioning**: Tracks all data transformations and lineage
 - **Model Registry**: Versioned model storage and management
-- **Flexible Environments**: Different configurations for dev/prod
-- **Comprehensive Logging**: Detailed pipeline execution logs
+- **Comprehensive Logging**: Structured logging throughout with decorators
 - **Data Validation**: Ensures data quality at each step
-- **Error Handling**: Robust error handling and recovery
+- **Error Handling**: Robust error handling and recovery mechanisms
 - **Date Specification**: Specify particular dates for GridMET climate data to test seasonal variations
+- **Health Monitoring**: Pipeline health checks and dependency validation
 
 ## Configuration
 
 ### Environment Settings
 
-The pipeline uses environment-specific configurations:
+The pipeline uses environment-specific configurations with validation:
 
 ```python
 # Development (src/config/environments.py)
 - Uses test sample data
-- Smaller model parameters
+- Smaller model parameters (n_estimators: 100)
 - Debug logging
 - Specific model file for inference
 
 # Production
 - Uses full dataset
-- Larger model parameters
+- Larger model parameters (n_estimators: 200)
 - Info logging
 - Latest model from registry
+
+# Testing
+- Uses test data
+- Minimal models for quick testing
+- Debug logging
+
+# Test Sample
+- Uses actual test sample data
+- Medium model parameters
+- Debug logging
 ```
 
 ### Model Settings
@@ -231,10 +243,27 @@ The pipeline uses environment-specific configurations:
 - n_estimators: 100 (dev) / 200 (prod)
 - test_size: 0.2
 - random_state: 42
+- Feature importance analysis included
 
 # Ensemble
-- Combines multiple models
+- Combines XGBoost with Bernoulli Naive Bayes
 - Automatic hyperparameter optimization
+- Stacking estimator for improved performance
+```
+
+### Data Processing Settings
+
+```python
+# Pseudo-absence Generation
+- ratio: 3 (pseudo-absences per occurrence)
+- buffer_km: 5.0 (minimum distance from real occurrences)
+- Uses improved BallTree algorithm for spatial distribution
+
+# Environmental Data
+- GridMET climate variables (8 variables)
+- Elevation from Open-Elevation API
+- Soil pH from SoilGrids API
+- Automatic date handling and validation
 ```
 
 ## Testing
@@ -256,14 +285,17 @@ pytest --cov=src tests/
 
 ### Model Performance
 - **Accuracy**: Typically 85-95% on test data
-- **Feature Importance**: Environmental variables ranked by importance
+- **Feature Importance**: Environmental variables ranked by importance with visualization
 - **Cross-validation**: Robust performance evaluation
+- **Model Comparison**: Compare performance across different model types
 
 ### Pipeline Performance
 - **Data Cleaning & Merging**: 5+ hours (depending on data size)
+- **Geocoding**: Variable time based on location complexity
+- **Pseudo-absence Generation**: 1-2 minutes with improved algorithm
+- **Environmental Extraction**: 2-5 seconds per coordinate
 - **Training**: 5-15 minutes (depending on data size)
 - **Inference**: 30-60 seconds per coordinate set
-- **Environmental Extraction**: 2-5 seconds per coordinate
 
 ## Troubleshooting
 
@@ -273,18 +305,35 @@ pytest --cov=src tests/
    ```bash
    # Check internet connection
    # Verify Planetary Computer access
+   # Ensure pystac-client and planetary-computer packages installed
    ```
 
 2. **Model Loading Errors**
    ```bash
-   # Check model file exists
+   # Check model file exists in models/ directory
    # Verify model format compatibility
+   # Check registry.json for model metadata
    ```
 
-3. **Memory Issues**
+3. **Geocoding Issues**
    ```bash
-   # Reduce batch size
+   # Check manual_geocodes.json for fallback coordinates
+   # Verify location data quality
+   # Check rate limiting for geocoding APIs
+   ```
+
+4. **Memory Issues**
+   ```bash
+   # Reduce batch size in environmental extraction
    # Use smaller test dataset
+   # Check available system memory
+   ```
+
+5. **Pseudo-absence Generation**
+   ```bash
+   # Verify coordinate data quality
+   # Check buffer distance settings
+   # Ensure sufficient spatial coverage
    ```
 
 ### Logs

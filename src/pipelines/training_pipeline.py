@@ -12,7 +12,6 @@ from src.utils.data_versioning import DataVersioning
 from src.data_load.loader import DataLoader
 from src.data_preprocess.preprocessor import DataPreprocessor
 from src.data_preprocess.geocode import Geocoder, load_manual_geocodes, apply_manual_geocodes
-from src.data_preprocess.pseudoabsence import generate_pseudo_absences
 from src.data_validation.validate import validate_data
 from src.features.environmental import EnvironmentalDataExtractor
 from src.models.pipeline import HuckleberryPredictor, RandomForestPredictor
@@ -105,11 +104,9 @@ class TrainingPipeline:
         """Generate pseudo-absences and combine with real occurrences."""
         self.logger.info("Generating pseudo-absences")
         
-        combined_df = generate_pseudo_absences(
+        combined_df = self.preprocessor.create_pseudo_absences(
             df,
-            ratio=self.settings.data.pseudo_absence_ratio,
-            buffer_km=self.settings.data.pseudo_absence_buffer_km,
-            random_seed=self.settings.data.random_seed
+            ratio=self.settings.data.pseudo_absence_ratio
         )
         
         self.logger.info(f"Generated {sum(combined_df['occurrence'] == 0)} pseudo-absences")

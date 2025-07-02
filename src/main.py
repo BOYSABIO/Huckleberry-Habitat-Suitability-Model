@@ -4,7 +4,6 @@ Main entry point for the Huckleberry Habitat Prediction Pipeline.
 
 import argparse
 import sys
-from pathlib import Path
 
 from src.config.settings import Settings
 from src.config.environments import get_settings

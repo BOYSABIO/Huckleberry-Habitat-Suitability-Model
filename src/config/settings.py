@@ -29,6 +29,19 @@ class DataSettings:
     max_lat: float = 52.0
     min_lon: float = -125.0
     max_lon: float = -65.0
+    
+    def __post_init__(self):
+        """Validate settings after initialization."""
+        if self.pseudo_absence_ratio < 1:
+            raise ValueError("pseudo_absence_ratio must be >= 1")
+        if self.pseudo_absence_buffer_km < 0:
+            raise ValueError("pseudo_absence_buffer_km must be >= 0")
+        if self.min_year > self.max_year:
+            raise ValueError("min_year cannot be greater than max_year")
+        if self.min_lat >= self.max_lat:
+            raise ValueError("min_lat must be less than max_lat")
+        if self.min_lon >= self.max_lon:
+            raise ValueError("min_lon must be less than max_lon")
 
 
 @dataclass

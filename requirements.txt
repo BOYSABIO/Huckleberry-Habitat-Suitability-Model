@@ -25,15 +25,23 @@ fsspec>=2025.5.0
 # Visualization
 matplotlib>=3.0.0
 seaborn>=0.12.0
+folium>=0.15.0
 
 # AutoML and advanced ML
 tpot>=0.12.0
 xgboost>=2.0.0
 
+# Geocoding and location services
+geopy>=2.4.0
+
+# LLM integration (optional)
+ollama>=0.1.0
+
 # Utilities
 python-dotenv>=1.1.0
 tqdm>=4.67.0
 requests>=2.32.0
+joblib>=1.4.0
 
 # Development and testing
 pytest>=7.0.0
