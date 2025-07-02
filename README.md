@@ -1,6 +1,6 @@
-# Huckleberry Habitat Prediction Pipeline
+# Huckleberry Habitat Suitability Prediction
 
-![Alt Text](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNG11ejNyZ2duN2d4eDF2enoxM2NoYTd1a3RiM2FpOXpoeTcyMmdteCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bAUolHkpJIr6CdcAeq/giphy.gif)
+<img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNG11ejNyZ2duN2d4eDF2enoxM2NoYTd1a3RiM2FpOXpoeTcyMmdteCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/bAUolHkpJIr6CdcAeq/giphy.gif" style="width:100%; height:auto;" />
 
 A comprehensive MLOps pipeline for predicting huckleberry habitat suitability using environmental data, machine learning, and geospatial analysis.
 
