@@ -41,7 +41,7 @@ class EnvironmentalDataExtractor:
         
     def load_gridmet_dataset(self):
         """Load the GridMET dataset from Planetary Computer."""
-        logger.info("🔄 Connecting to Planetary Computer...")
+        logger.info("Connecting to Planetary Computer...")
         try:
             catalog = pystac_client.Client.open(
                 "https://planetarycomputer.microsoft.com/api/stac/v1",
@@ -54,10 +54,10 @@ class EnvironmentalDataExtractor:
                 **asset.extra_fields["xarray:open_kwargs"],
                 chunks="auto"
             )
-            logger.info("✅ GridMET dataset loaded successfully")
+            logger.info("GridMET dataset loaded successfully")
             return ds
         except Exception as e:
-            logger.error(f"❌ Failed to load GridMET dataset: {e}")
+            logger.error(f"Failed to load GridMET dataset: {e}")
             raise
     
     def extract_gridmet_data(self, df, target_date=None):
@@ -71,7 +71,7 @@ class EnvironmentalDataExtractor:
         Returns:
             DataFrame with GridMET data added (only records within bounds and with valid data)
         """
-        logger.info("🌤️ Extracting GridMET climate data...")
+        logger.info("Extracting GridMET climate data...")
         
         try:
             # Load GridMET dataset
@@ -133,7 +133,7 @@ class EnvironmentalDataExtractor:
             logger.info(f"Records within GridMET bounds: {len(df_valid)}/{len(df)}")
             
             if len(df_valid) == 0:
-                logger.warning("⚠️ No records within GridMET bounds")
+                logger.warning("No records within GridMET bounds")
                 return pd.DataFrame()  # Return empty DataFrame instead of original
             
             # Extract data for each record
@@ -180,11 +180,11 @@ class EnvironmentalDataExtractor:
             # Create enriched DataFrame
             enriched_df = pd.DataFrame(gridmet_data)
             
-            logger.info(f"✅ GridMET extraction complete: {len(enriched_df)} records (with valid data)")
+            logger.info(f"GridMET extraction complete: {len(enriched_df)} records (with valid data)")
             return enriched_df
             
         except Exception as e:
-            logger.error(f"❌ Failed to extract GridMET data: {e}")
+            logger.error(f"Failed to extract GridMET data: {e}")
             raise
     
     def get_elevation(self, lat, lon):
@@ -211,7 +211,7 @@ class EnvironmentalDataExtractor:
         Returns:
             DataFrame with elevation column added
         """
-        logger.info("🏔️ Adding elevation data...")
+        logger.info("Adding elevation data...")
         
         # Add elevation column if it doesn't exist
         if 'elevation' not in df.columns:
@@ -222,7 +222,7 @@ class EnvironmentalDataExtractor:
         records_to_process = df[missing_elevation].copy()
         
         if len(records_to_process) == 0:
-            logger.info("✅ All records already have elevation data")
+            logger.info("All records already have elevation data")
             return df
         
         logger.info(f"Processing elevation for {len(records_to_process)} records...")
@@ -236,7 +236,7 @@ class EnvironmentalDataExtractor:
             # Be polite to the API
             time.sleep(self.request_delay)
         
-        logger.info(f"✅ Elevation data added: {df['elevation'].notna().sum()}/{len(df)} records")
+        logger.info(f"Elevation data added: {df['elevation'].notna().sum()}/{len(df)} records")
         return df
     
     def get_soil_ph(self, lat, lon, retries=3, base_delay=2):
@@ -284,7 +284,7 @@ class EnvironmentalDataExtractor:
         Returns:
             DataFrame with soil_ph column added
         """
-        logger.info("🌱 Adding soil pH data...")
+        logger.info("Adding soil pH data...")
         
         # Add soil_ph column if it doesn't exist
         if 'soil_ph' not in df.columns:
@@ -295,7 +295,7 @@ class EnvironmentalDataExtractor:
         records_to_process = df[missing_soil].copy()
         
         if len(records_to_process) == 0:
-            logger.info("✅ All records already have soil pH data")
+            logger.info("All records already have soil pH data")
             return df
         
         logger.info(f"Processing soil pH for {len(records_to_process)} records...")
@@ -309,7 +309,7 @@ class EnvironmentalDataExtractor:
             # Be polite to the API
             time.sleep(self.request_delay)
         
-        logger.info(f"✅ Soil pH data added: {df['soil_ph'].notna().sum()}/{len(df)} records")
+        logger.info(f"Soil pH data added: {df['soil_ph'].notna().sum()}/{len(df)} records")
         return df
     
     def create_environmental_features(self, df):
@@ -322,7 +322,7 @@ class EnvironmentalDataExtractor:
         Returns:
             DataFrame with additional derived features
         """
-        logger.info("🔧 Creating derived environmental features...")
+        logger.info("Creating derived environmental features...")
         
         # Temperature features
         if 'air_temperature' in df.columns:
@@ -347,5 +347,5 @@ class EnvironmentalDataExtractor:
             df['elevation_m'] = df['elevation']  # Keep in meters
             df['elevation_ft'] = df['elevation'] * 3.28084  # Convert to feet
         
-        logger.info(f"✅ Created {len([col for col in df.columns if col not in ['decimalLatitude', 'decimalLongitude', 'datetime', 'occurrence']])} environmental features")
+        logger.info(f"Created {len([col for col in df.columns if col not in ['decimalLatitude', 'decimalLongitude', 'datetime', 'occurrence']])} environmental features")
         return df 

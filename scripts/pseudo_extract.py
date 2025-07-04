@@ -24,7 +24,7 @@ RETRY_DELAY_SECONDS = 5
 # ---------------------------------------
 
 def load_dataset():
-    print("🔄 Connecting to Planetary Computer...")
+    print("Connecting to Planetary Computer...")
     catalog = pystac_client.Client.open(
         "https://planetarycomputer.microsoft.com/api/stac/v1",
         modifier=planetary_computer.sign_inplace,
@@ -36,7 +36,7 @@ def load_dataset():
         **asset.extra_fields["xarray:open_kwargs"],
         chunks="auto"
     )
-    print("✅ GridMET dataset loaded.")
+    print("GridMET dataset loaded.")
     return ds
 
 def enrich_and_write_row(row, ds):
@@ -67,7 +67,7 @@ def enrich_and_write_row(row, ds):
         return pd.DataFrame([{**row.to_dict(), **env_data}])
     
     except Exception as e:
-        print(f"❌ Failed to fetch GridMET for row (lat={lat}, lon={lon}, date={date.date()}): {e}")
+        print(f"Failed to fetch GridMET for row (lat={lat}, lon={lon}, date={date.date()}): {e}")
         return None
 
 def main():
@@ -95,12 +95,12 @@ def main():
                 header_written = True
                 break
             else:
-                print("🔁 Retrying after reconnect...")
+                print("Retrying after reconnect...")
                 try:
                     time.sleep(RETRY_DELAY_SECONDS)
                     ds = load_dataset()
                 except Exception as e:
-                    print(f"🛑 Reconnection failed: {e}")
+                    print(f"Reconnection failed: {e}")
                     break
 
 if __name__ == "__main__":

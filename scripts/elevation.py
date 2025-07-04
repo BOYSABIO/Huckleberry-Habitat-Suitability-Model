@@ -22,7 +22,7 @@ def get_elevation(lat, lon):
             print(f"⚠️ API error: {response.status_code}")
             return None
     except Exception as e:
-        print(f"❌ Failed to get elevation for {lat}, {lon}: {e}")
+        print(f"Failed to get elevation for {lat}, {lon}: {e}")
         return None
 
 def main():
@@ -36,7 +36,7 @@ def main():
     if os.path.exists(OUTPUT_CSV):
         enriched = pd.read_csv(OUTPUT_CSV)
         start_idx = len(enriched)
-        print(f"🔁 Resuming from row {start_idx}")
+        print(f"Resuming from row {start_idx}")
     else:
         enriched = pd.DataFrame()
         start_idx = 0
@@ -60,7 +60,7 @@ def main():
 
         time.sleep(REQUEST_DELAY)  # avoid hammering API
 
-    print("✅ Elevation enrichment complete.")
+    print("Elevation enrichment complete.")
 
 if __name__ == "__main__":
     main()

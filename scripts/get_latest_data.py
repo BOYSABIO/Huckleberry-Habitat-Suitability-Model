@@ -72,4 +72,4 @@ prediction_df['gridmet_date'] = pd.to_datetime(latest_time)
 
 # Save for enrichment
 prediction_df.to_csv("./data/test/idaho_gridmet_latest.csv", index=False)
-print("✅ Idaho gridMET dataset with date ready for enrichment!")
+print("Idaho gridMET dataset with date ready for enrichment!")

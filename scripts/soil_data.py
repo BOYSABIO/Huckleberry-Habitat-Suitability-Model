@@ -24,7 +24,7 @@ def get_soil_ph(lat, lon, retries=5, base_delay=5):
             response = requests.get(url)
             if response.status_code == 429:
                 wait = base_delay * (2 ** attempt)
-                print(f"⏳ Rate limited. Waiting {wait}s...")
+                print(f"Rate limited. Waiting {wait}s...")
                 time.sleep(wait)
                 continue
 
@@ -40,13 +40,13 @@ def get_soil_ph(lat, lon, retries=5, base_delay=5):
             return None
 
         except Exception as e:
-            print(f"⚠️ Error at ({lat}, {lon}): {e}")
+            print(f"Error at ({lat}, {lon}): {e}")
             time.sleep(base_delay * (2 ** attempt))
     
     return None  # failed after retries
 
 def main():
-    print("📂 Loading dataset...")
+    print("Loading dataset...")
     df = pd.read_csv(INPUT_CSV)
 
     if os.path.exists(OUTPUT_CSV):

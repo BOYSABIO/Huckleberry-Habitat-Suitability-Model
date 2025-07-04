@@ -160,13 +160,13 @@ def main():
     if args.command == 'train':
         try:
             results = run_training_pipeline(args.environment)
-            print("✅ Training completed successfully!")
+            print("Training completed successfully!")
             print(f"Model version: {results['model_version_id']}")
             print(f"Final record count: {results['final_record_count']}")
             print(f"Metrics: {results['metrics']}")
             
         except Exception as e:
-            print(f"❌ Training failed: {str(e)}")
+            print(f"Training failed: {str(e)}")
             sys.exit(1)
     
     elif args.command == 'infer':
@@ -188,7 +188,7 @@ def main():
                 gridmet_date=args.gridmet_date
             )
             
-            print("✅ Inference completed successfully!")
+            print("Inference completed successfully!")
             if args.gridmet_date:
                 print(f"GridMET date used: {args.gridmet_date}")
             else:
@@ -203,7 +203,7 @@ def main():
                 print(f"Map saved to: {results['map_path']}")
             
         except Exception as e:
-            print(f"❌ Inference failed: {str(e)}")
+            print(f"Inference failed: {str(e)}")
             sys.exit(1)
     
     else:

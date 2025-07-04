@@ -358,7 +358,7 @@ class InferencePipeline:
             suitable_count = sum(results_df['probability'] >= confidence_threshold)
             avg_confidence = results_df['probability'].mean()
             
-            self.logger.info("✅ Inference pipeline completed successfully")
+            self.logger.info("Inference pipeline completed successfully")
             
             return {
                 "success": True,
@@ -373,5 +373,5 @@ class InferencePipeline:
             }
             
         except Exception as e:
-            self.logger.error(f"❌ Inference pipeline failed: {str(e)}")
+            self.logger.error(f"Inference pipeline failed: {str(e)}")
             raise 

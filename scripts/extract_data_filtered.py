@@ -29,7 +29,7 @@ RETRY_DELAY_SECONDS = 10
 def load_dataset():
     """Load the gridMET dataset and return it."""
     try:
-        print("🔄 Connecting to Planetary Computer...")
+        print("Connecting to Planetary Computer...")
         catalog = pystac_client.Client.open(
             "https://planetarycomputer.microsoft.com/api/stac/v1",
             modifier=planetary_computer.sign_inplace,
@@ -42,10 +42,10 @@ def load_dataset():
             **asset.extra_fields["xarray:open_kwargs"],
             chunks="auto"
         )
-        print("✅ Dataset loaded.")
+        print("Dataset loaded.")
         return ds
     except Exception as e:
-        print(f"❌ Failed to load dataset: {e}")
+        print(f"Failed to load dataset: {e}")
         raise
 
 
@@ -67,7 +67,7 @@ def filter_data(df, lat_min, lat_max, lon_min, lon_max, time_min, time_max):
     # Filter the dataframe
     filtered_df = df[all_in_bounds].copy().reset_index(drop=True)
     
-    print(f"📊 Filtering Results:")
+    print(f"Filtering Results:")
     print(f"   Original data: {len(df)} rows")
     print(f"   Filtered data: {len(filtered_df)} rows")
     print(f"   Removed: {len(df) - len(filtered_df)} rows")
@@ -87,25 +87,25 @@ def main():
         ds.time.values.max()
     )
     
-    print("📊 gridMET Dataset Bounds:")
+    print("gridMET Dataset Bounds:")
     print(f"   Latitude: {lat_min:.3f} to {lat_max:.3f}")
     print(f"   Longitude: {lon_min:.3f} to {lon_max:.3f}")
     print(f"   Time: {time_min.date()} to {time_max.date()}")
     
     # Load and filter input data
-    print("\n📂 Loading and filtering data...")
+    print("\nLoading and filtering data...")
     df = pd.read_csv(INPUT_CSV)
     filtered_df = filter_data(df, lat_min, lat_max, lon_min, lon_max, time_min, time_max)
     
     if len(filtered_df) == 0:
-        print("❌ No data points within bounds. Exiting.")
+        print("No data points within bounds. Exiting.")
         return
     
     # Resume from where we left off
     if os.path.exists(OUTPUT_CSV):
         existing = pd.read_csv(OUTPUT_CSV)
         start_idx = len(existing)
-        print(f"🔁 Resuming from index {start_idx}")
+        print(f"Resuming from index {start_idx}")
     else:
         existing = pd.DataFrame()
         start_idx = 0
@@ -130,7 +130,7 @@ def main():
             gridmet_lon = ds.lon.values[lon_idx]
             gridmet_date = pd.to_datetime(ds.time.values[time_idx])
             
-            print(f"📍 gridMET point: lat={gridmet_lat:.5f}, "
+            print(f"gridMET point: lat={gridmet_lat:.5f}, "
                   f"lon={gridmet_lon:.5f}, date={gridmet_date.date()}")
             
             # Load cube and extract data
@@ -153,18 +153,18 @@ def main():
             else:
                 row_out.to_csv(OUTPUT_CSV, mode="a", header=False, index=False)
             
-            print("✅ Row saved.")
+            print("Row saved.")
             
         except Exception as e:
-            print(f"❌ Failed at row {i}: {e}")
-            print("🔄 Reconnecting and retrying after delay...")
+            print(f"Failed at row {i}: {e}")
+            print("Reconnecting and retrying after delay...")
             try:
                 time.sleep(RETRY_DELAY_SECONDS)
                 ds = load_dataset()
-                print("✅ Reconnected. Retrying row...")
+                print("Reconnected. Retrying row...")
                 continue  # retry same row
             except Exception as e2:
-                print(f"🛑 Reconnection failed. Stopping. Error: {e2}")
+                print(f"Reconnection failed. Stopping. Error: {e2}")
                 break
 
 
