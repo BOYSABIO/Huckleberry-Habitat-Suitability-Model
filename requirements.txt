@@ -11,11 +11,13 @@ rasterio>=1.4.0
 rioxarray>=0.15.0
 pyproj>=3.6.0
 shapely>=2.0.0
+pyogrio>=0.11.0
 
 # Microsoft Planetary Computer for climate data
 planetary-computer>=1.0.0
 pystac-client>=0.8.0
 pystac>=1.10.0
+stackstac>=0.5.0
 
 # Data processing and utilities
 dask>=2024.8.0
@@ -23,25 +25,27 @@ pyarrow>=20.0.0
 fsspec>=2025.5.0
 
 # Visualization
-matplotlib>=3.0.0
-seaborn>=0.12.0
-folium>=0.15.0
+matplotlib>=3.9.0
+seaborn>=0.13.0
+folium>=0.20.0
 
 # AutoML and advanced ML
 tpot>=0.12.0
-xgboost>=2.0.0
+xgboost>=2.1.0
 
 # Geocoding and location services
 geopy>=2.4.0
+geographiclib>=2.0
 
 # LLM integration (optional)
-ollama>=0.1.0
+ollama>=0.5.0
 
 # Utilities
 python-dotenv>=1.1.0
 tqdm>=4.67.0
 requests>=2.32.0
-joblib>=1.4.0
+joblib>=1.5.0
+loguru>=0.7.0
 
 # Development and testing
 pytest>=7.0.0
