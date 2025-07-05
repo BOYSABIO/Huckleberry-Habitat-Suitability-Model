@@ -242,7 +242,34 @@
           "train_size": 12
         }
       }
+    },
+    {
+      "id": "v10_20250705_141054",
+      "timestamp": "2025-07-05T14:10:54.917623",
+      "data_hash": "28ff26801c9d7fd036f02b24fcea471d",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v10_20250705_141054",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
     }
   ],
-  "current": "v9_20250705_132104"
+  "current": "v10_20250705_141054"
 }

@@ -17,7 +17,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_968546585a57989bce7a95db4b3d9761 {
+                #map_72adb472955f957928f6961f15bd16fa {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -54,16 +54,16 @@
 <body>
     
     
-            <div class="folium-map" id="map_968546585a57989bce7a95db4b3d9761" ></div>
+            <div class="folium-map" id="map_72adb472955f957928f6961f15bd16fa" ></div>
         
 </body>
 <script>
     
     
-            var map_968546585a57989bce7a95db4b3d9761 = L.map(
-                "map_968546585a57989bce7a95db4b3d9761",
+            var map_72adb472955f957928f6961f15bd16fa = L.map(
+                "map_72adb472955f957928f6961f15bd16fa",
                 {
-                    center: [48.2154236, -116.5403146],
+                    center: [47.78419729411765, -116.52968935294118],
                     crs: L.CRS.EPSG3857,
                     ...{
   "zoom": 8,
@@ -78,7 +78,7 @@
 
         
     
-            var tile_layer_db3fc28353dca18721bf797410fd0bce = L.tileLayer(
+            var tile_layer_dbe8b49a1564e06898fdc1a06db5770a = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
@@ -95,17 +95,93 @@
             );
         
     
-            tile_layer_db3fc28353dca18721bf797410fd0bce.addTo(map_968546585a57989bce7a95db4b3d9761);
+            tile_layer_dbe8b49a1564e06898fdc1a06db5770a.addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var marker_f19a6e278433f6cb88919f89d4d14c5b = L.marker(
+            var marker_b2080d021ab6b4f451b16902788d6f28 = L.marker(
+                [44.5, -116.5],
+                {
+}
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
+        
+    
+            var icon_81a5a5f33827e92a667a9018ee8e4a11 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "leaf",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_a178936c525bac9a58bfd0ce51073841 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_7e73ea45ad8b34a578edbf3dac4d7103 = $(`<div id="html_7e73ea45ad8b34a578edbf3dac4d7103" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 30.00%<br>             Latitude: 44.5000<br>             Longitude: -116.5000<br>             </div>`)[0];
+                popup_a178936c525bac9a58bfd0ce51073841.setContent(html_7e73ea45ad8b34a578edbf3dac4d7103);
+            
+        
+
+        marker_b2080d021ab6b4f451b16902788d6f28.bindPopup(popup_a178936c525bac9a58bfd0ce51073841)
+        ;
+
+        
+    
+    
+                marker_b2080d021ab6b4f451b16902788d6f28.setIcon(icon_81a5a5f33827e92a667a9018ee8e4a11);
+            
+    
+            var marker_9c98878b499a356d5b06100c3d00068e = L.marker(
+                [44.6, -116.4],
+                {
+}
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
+        
+    
+            var icon_3ce8d2d872b28f625ec556e449097ae6 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "leaf",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c2a02da4f3b7dfb14c8e3ba0f2034c71 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f30bd3482077838119382940d8bbf109 = $(`<div id="html_f30bd3482077838119382940d8bbf109" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 35.00%<br>             Latitude: 44.6000<br>             Longitude: -116.4000<br>             </div>`)[0];
+                popup_c2a02da4f3b7dfb14c8e3ba0f2034c71.setContent(html_f30bd3482077838119382940d8bbf109);
+            
+        
+
+        marker_9c98878b499a356d5b06100c3d00068e.bindPopup(popup_c2a02da4f3b7dfb14c8e3ba0f2034c71)
+        ;
+
+        
+    
+    
+                marker_9c98878b499a356d5b06100c3d00068e.setIcon(icon_3ce8d2d872b28f625ec556e449097ae6);
+            
+    
+            var marker_122ec2511c0e31797d0305d1fbf3d189 = L.marker(
                 [44.7, -116.3],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_2f244212f0882be68063dd0fb9e6edaf = L.AwesomeMarkers.icon(
+            var icon_e6120454965df055698c6b958e944bbb = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -116,34 +192,34 @@
             );
         
     
-        var popup_895ddecde962994c2d6ebcf26d5bbaf2 = L.popup({
+        var popup_85ebf9204076c693b5ee266a9fa3d6c6 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_13677f8e6c4ffa6f8f7d21858953c4e7 = $(`<div id="html_13677f8e6c4ffa6f8f7d21858953c4e7" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 96.00%<br>             Latitude: 44.7000<br>             Longitude: -116.3000<br>             </div>`)[0];
-                popup_895ddecde962994c2d6ebcf26d5bbaf2.setContent(html_13677f8e6c4ffa6f8f7d21858953c4e7);
+                var html_2de6d39d9850d7b188a1aadb1cacd43c = $(`<div id="html_2de6d39d9850d7b188a1aadb1cacd43c" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 98.00%<br>             Latitude: 44.7000<br>             Longitude: -116.3000<br>             </div>`)[0];
+                popup_85ebf9204076c693b5ee266a9fa3d6c6.setContent(html_2de6d39d9850d7b188a1aadb1cacd43c);
             
         
 
-        marker_f19a6e278433f6cb88919f89d4d14c5b.bindPopup(popup_895ddecde962994c2d6ebcf26d5bbaf2)
+        marker_122ec2511c0e31797d0305d1fbf3d189.bindPopup(popup_85ebf9204076c693b5ee266a9fa3d6c6)
         ;
 
         
     
     
-                marker_f19a6e278433f6cb88919f89d4d14c5b.setIcon(icon_2f244212f0882be68063dd0fb9e6edaf);
+                marker_122ec2511c0e31797d0305d1fbf3d189.setIcon(icon_e6120454965df055698c6b958e944bbb);
             
     
-            var marker_11fea5434dc71708769f1f69e8e8e74a = L.marker(
+            var marker_e7dd3fd3294e05ef13985a8d4bddcfb1 = L.marker(
                 [44.499669, -111.329396],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_2a8dac15c9849d6777f5d62b108ded06 = L.AwesomeMarkers.icon(
+            var icon_c4b0ece37a4f032d74332f95087be184 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -154,34 +230,34 @@
             );
         
     
-        var popup_7a7c13e2c27e6e978d337ced146abca1 = L.popup({
+        var popup_4a97133e8d649a52c7c4846b20854812 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_387803aa1ed675d6668d309d39481e82 = $(`<div id="html_387803aa1ed675d6668d309d39481e82" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 95.00%<br>             Latitude: 44.4997<br>             Longitude: -111.3294<br>             </div>`)[0];
-                popup_7a7c13e2c27e6e978d337ced146abca1.setContent(html_387803aa1ed675d6668d309d39481e82);
+                var html_e7168df2ba11ca27a364c77a5ab276a1 = $(`<div id="html_e7168df2ba11ca27a364c77a5ab276a1" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 93.00%<br>             Latitude: 44.4997<br>             Longitude: -111.3294<br>             </div>`)[0];
+                popup_4a97133e8d649a52c7c4846b20854812.setContent(html_e7168df2ba11ca27a364c77a5ab276a1);
             
         
 
-        marker_11fea5434dc71708769f1f69e8e8e74a.bindPopup(popup_7a7c13e2c27e6e978d337ced146abca1)
+        marker_e7dd3fd3294e05ef13985a8d4bddcfb1.bindPopup(popup_4a97133e8d649a52c7c4846b20854812)
         ;
 
         
     
     
-                marker_11fea5434dc71708769f1f69e8e8e74a.setIcon(icon_2a8dac15c9849d6777f5d62b108ded06);
+                marker_e7dd3fd3294e05ef13985a8d4bddcfb1.setIcon(icon_c4b0ece37a4f032d74332f95087be184);
             
     
-            var marker_45947ac792bb184c0a18c2336c045231 = L.marker(
+            var marker_9cc08da22f48fdf88f43345e3f7bee74 = L.marker(
                 [48.687832, -116.924988],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_9bb31df60b9b4dbba8b62c2ec542b110 = L.AwesomeMarkers.icon(
+            var icon_ef3855585261601bd7363806c40b55dc = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -192,34 +268,34 @@
             );
         
     
-        var popup_19c3d6149ad7e3a86967b25c49bd16b0 = L.popup({
+        var popup_3a0f6b0f7e393cdc82c5d1dab5dd9ea7 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_fc0da89196423ade474e7f5de519bf7c = $(`<div id="html_fc0da89196423ade474e7f5de519bf7c" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 96.00%<br>             Latitude: 48.6878<br>             Longitude: -116.9250<br>             </div>`)[0];
-                popup_19c3d6149ad7e3a86967b25c49bd16b0.setContent(html_fc0da89196423ade474e7f5de519bf7c);
+                var html_8514528ece0eb38ff90050259a79d91d = $(`<div id="html_8514528ece0eb38ff90050259a79d91d" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 91.00%<br>             Latitude: 48.6878<br>             Longitude: -116.9250<br>             </div>`)[0];
+                popup_3a0f6b0f7e393cdc82c5d1dab5dd9ea7.setContent(html_8514528ece0eb38ff90050259a79d91d);
             
         
 
-        marker_45947ac792bb184c0a18c2336c045231.bindPopup(popup_19c3d6149ad7e3a86967b25c49bd16b0)
+        marker_9cc08da22f48fdf88f43345e3f7bee74.bindPopup(popup_3a0f6b0f7e393cdc82c5d1dab5dd9ea7)
         ;
 
         
     
     
-                marker_45947ac792bb184c0a18c2336c045231.setIcon(icon_9bb31df60b9b4dbba8b62c2ec542b110);
+                marker_9cc08da22f48fdf88f43345e3f7bee74.setIcon(icon_ef3855585261601bd7363806c40b55dc);
             
     
-            var marker_58cad825abb47044c9b7d9e523909637 = L.marker(
+            var marker_0cb64651f91fc33162a4b5d25f48bf29 = L.marker(
                 [48.698033, -116.953418],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_eeb242d06551f5a01ba0b2d50b28fd77 = L.AwesomeMarkers.icon(
+            var icon_7c106dcd3665a6b9326cc72d6f140e3d = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -230,34 +306,34 @@
             );
         
     
-        var popup_34f4bf1ea5b29c6349260d05151b010f = L.popup({
+        var popup_fc33e994e63833aa6c7f44fa16574b74 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_47b5adfd4a80a9100ccd841cf5df15cb = $(`<div id="html_47b5adfd4a80a9100ccd841cf5df15cb" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 96.00%<br>             Latitude: 48.6980<br>             Longitude: -116.9534<br>             </div>`)[0];
-                popup_34f4bf1ea5b29c6349260d05151b010f.setContent(html_47b5adfd4a80a9100ccd841cf5df15cb);
+                var html_a47159c7107c207163ab53785d8efd98 = $(`<div id="html_a47159c7107c207163ab53785d8efd98" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 91.00%<br>             Latitude: 48.6980<br>             Longitude: -116.9534<br>             </div>`)[0];
+                popup_fc33e994e63833aa6c7f44fa16574b74.setContent(html_a47159c7107c207163ab53785d8efd98);
             
         
 
-        marker_58cad825abb47044c9b7d9e523909637.bindPopup(popup_34f4bf1ea5b29c6349260d05151b010f)
+        marker_0cb64651f91fc33162a4b5d25f48bf29.bindPopup(popup_fc33e994e63833aa6c7f44fa16574b74)
         ;
 
         
     
     
-                marker_58cad825abb47044c9b7d9e523909637.setIcon(icon_eeb242d06551f5a01ba0b2d50b28fd77);
+                marker_0cb64651f91fc33162a4b5d25f48bf29.setIcon(icon_7c106dcd3665a6b9326cc72d6f140e3d);
             
     
-            var marker_cbf8bd349fceeceacbc25a7d3b0e703a = L.marker(
+            var marker_bfa3f6eb1285aeedac9e68a2b0f65778 = L.marker(
                 [48.721255, -116.973486],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_20894904cd847a18fac3f3692910ef92 = L.AwesomeMarkers.icon(
+            var icon_b0783336b3a2b3f99916c7193b8efa1a = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -268,34 +344,34 @@
             );
         
     
-        var popup_a6e72ca06394334f4d7d26ea32455835 = L.popup({
+        var popup_7b38990ddc9579a6f6525ad9aefdd33d = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_8fcf1f704adce785d4842c99c8605de8 = $(`<div id="html_8fcf1f704adce785d4842c99c8605de8" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 93.00%<br>             Latitude: 48.7213<br>             Longitude: -116.9735<br>             </div>`)[0];
-                popup_a6e72ca06394334f4d7d26ea32455835.setContent(html_8fcf1f704adce785d4842c99c8605de8);
+                var html_46160468206a951451057e8840a1eca1 = $(`<div id="html_46160468206a951451057e8840a1eca1" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 90.00%<br>             Latitude: 48.7213<br>             Longitude: -116.9735<br>             </div>`)[0];
+                popup_7b38990ddc9579a6f6525ad9aefdd33d.setContent(html_46160468206a951451057e8840a1eca1);
             
         
 
-        marker_cbf8bd349fceeceacbc25a7d3b0e703a.bindPopup(popup_a6e72ca06394334f4d7d26ea32455835)
+        marker_bfa3f6eb1285aeedac9e68a2b0f65778.bindPopup(popup_7b38990ddc9579a6f6525ad9aefdd33d)
         ;
 
         
     
     
-                marker_cbf8bd349fceeceacbc25a7d3b0e703a.setIcon(icon_20894904cd847a18fac3f3692910ef92);
+                marker_bfa3f6eb1285aeedac9e68a2b0f65778.setIcon(icon_b0783336b3a2b3f99916c7193b8efa1a);
             
     
-            var marker_e1f6f9a2c8d8b2ead201c72d58681cb2 = L.marker(
+            var marker_4fa47903532be2c8d98ead78b92b34e6 = L.marker(
                 [48.769863, -116.94878],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_42f17995e1f0badf4e40dbe560671d51 = L.AwesomeMarkers.icon(
+            var icon_8fd55939f26e7c1dceac428e29f52c0c = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -306,34 +382,34 @@
             );
         
     
-        var popup_2ce8cf83ca1e2fcd294286782680f986 = L.popup({
+        var popup_c4958265d5856ce68789bfcf942e6e3f = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_f2b1efa4f5d86a66f13d74ca8706785f = $(`<div id="html_f2b1efa4f5d86a66f13d74ca8706785f" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 96.00%<br>             Latitude: 48.7699<br>             Longitude: -116.9488<br>             </div>`)[0];
-                popup_2ce8cf83ca1e2fcd294286782680f986.setContent(html_f2b1efa4f5d86a66f13d74ca8706785f);
+                var html_3b9e075c5cb96f12265b8ab737c593af = $(`<div id="html_3b9e075c5cb96f12265b8ab737c593af" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 95.00%<br>             Latitude: 48.7699<br>             Longitude: -116.9488<br>             </div>`)[0];
+                popup_c4958265d5856ce68789bfcf942e6e3f.setContent(html_3b9e075c5cb96f12265b8ab737c593af);
             
         
 
-        marker_e1f6f9a2c8d8b2ead201c72d58681cb2.bindPopup(popup_2ce8cf83ca1e2fcd294286782680f986)
+        marker_4fa47903532be2c8d98ead78b92b34e6.bindPopup(popup_c4958265d5856ce68789bfcf942e6e3f)
         ;
 
         
     
     
-                marker_e1f6f9a2c8d8b2ead201c72d58681cb2.setIcon(icon_42f17995e1f0badf4e40dbe560671d51);
+                marker_4fa47903532be2c8d98ead78b92b34e6.setIcon(icon_8fd55939f26e7c1dceac428e29f52c0c);
             
     
-            var marker_9563d545d59964b2674c78004359afcc = L.marker(
+            var marker_fc68242e1b669482c24bad318f03fbbd = L.marker(
                 [48.802889, -116.98353],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_6771bfd82c64fbef30f04f8fdd9ff5e7 = L.AwesomeMarkers.icon(
+            var icon_67df12a7c134195c4db4de8e4dcc8d1d = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -344,34 +420,34 @@
             );
         
     
-        var popup_bbf3956a1a661bb38ba637b83a57b579 = L.popup({
+        var popup_acbde2ce7b5a715446a3f6bc52fc65a4 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_6747c79fd4023ba4981fa401a93b04e1 = $(`<div id="html_6747c79fd4023ba4981fa401a93b04e1" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 94.00%<br>             Latitude: 48.8029<br>             Longitude: -116.9835<br>             </div>`)[0];
-                popup_bbf3956a1a661bb38ba637b83a57b579.setContent(html_6747c79fd4023ba4981fa401a93b04e1);
+                var html_95db89d4bc1b7feb70c32029244e1a25 = $(`<div id="html_95db89d4bc1b7feb70c32029244e1a25" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 93.00%<br>             Latitude: 48.8029<br>             Longitude: -116.9835<br>             </div>`)[0];
+                popup_acbde2ce7b5a715446a3f6bc52fc65a4.setContent(html_95db89d4bc1b7feb70c32029244e1a25);
             
         
 
-        marker_9563d545d59964b2674c78004359afcc.bindPopup(popup_bbf3956a1a661bb38ba637b83a57b579)
+        marker_fc68242e1b669482c24bad318f03fbbd.bindPopup(popup_acbde2ce7b5a715446a3f6bc52fc65a4)
         ;
 
         
     
     
-                marker_9563d545d59964b2674c78004359afcc.setIcon(icon_6771bfd82c64fbef30f04f8fdd9ff5e7);
+                marker_fc68242e1b669482c24bad318f03fbbd.setIcon(icon_67df12a7c134195c4db4de8e4dcc8d1d);
             
     
-            var marker_fb810d9bcac0b799947837e419c3b0f2 = L.marker(
+            var marker_7e4666f8e49d9e9ce73b842014cf2154 = L.marker(
                 [48.818715, -116.936533],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_b490c9677ba6dc641f486328606d7da3 = L.AwesomeMarkers.icon(
+            var icon_20f16fe683f0520308fd7ea8758507f2 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -382,34 +458,34 @@
             );
         
     
-        var popup_22ea244238eb8b4e767f172ee72cb5b5 = L.popup({
+        var popup_ad0b48c4d329ba02a1bf7e3c7e8ab2a1 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_309c36889d7fca7d8f91ced65170cd9d = $(`<div id="html_309c36889d7fca7d8f91ced65170cd9d" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 62.00%<br>             Latitude: 48.8187<br>             Longitude: -116.9365<br>             </div>`)[0];
-                popup_22ea244238eb8b4e767f172ee72cb5b5.setContent(html_309c36889d7fca7d8f91ced65170cd9d);
+                var html_b1d558d37b30eb1d9396121aa2e923d7 = $(`<div id="html_b1d558d37b30eb1d9396121aa2e923d7" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 59.00%<br>             Latitude: 48.8187<br>             Longitude: -116.9365<br>             </div>`)[0];
+                popup_ad0b48c4d329ba02a1bf7e3c7e8ab2a1.setContent(html_b1d558d37b30eb1d9396121aa2e923d7);
             
         
 
-        marker_fb810d9bcac0b799947837e419c3b0f2.bindPopup(popup_22ea244238eb8b4e767f172ee72cb5b5)
+        marker_7e4666f8e49d9e9ce73b842014cf2154.bindPopup(popup_ad0b48c4d329ba02a1bf7e3c7e8ab2a1)
         ;
 
         
     
     
-                marker_fb810d9bcac0b799947837e419c3b0f2.setIcon(icon_b490c9677ba6dc641f486328606d7da3);
+                marker_7e4666f8e49d9e9ce73b842014cf2154.setIcon(icon_20f16fe683f0520308fd7ea8758507f2);
             
     
-            var marker_f1d935b3fd92651b75b3c741526ed564 = L.marker(
+            var marker_51a5760a4b280cf01af2415157fc268e = L.marker(
                 [48.79045, -117.027455],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_2da691c042cfe3a0d5e34722e1d16b35 = L.AwesomeMarkers.icon(
+            var icon_b2025278ac285c935e0dbf15fe88fbbf = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -420,34 +496,34 @@
             );
         
     
-        var popup_39f54610b5d13f94bf34e8a8c6eb4175 = L.popup({
+        var popup_4b3b12058e3a67b8d26754eacc4fbece = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_b549da1cf171f7198a0360ff2863bd8c = $(`<div id="html_b549da1cf171f7198a0360ff2863bd8c" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 96.00%<br>             Latitude: 48.7904<br>             Longitude: -117.0275<br>             </div>`)[0];
-                popup_39f54610b5d13f94bf34e8a8c6eb4175.setContent(html_b549da1cf171f7198a0360ff2863bd8c);
+                var html_931bd493bd46e938b5b57116c33bd339 = $(`<div id="html_931bd493bd46e938b5b57116c33bd339" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 90.00%<br>             Latitude: 48.7904<br>             Longitude: -117.0275<br>             </div>`)[0];
+                popup_4b3b12058e3a67b8d26754eacc4fbece.setContent(html_931bd493bd46e938b5b57116c33bd339);
             
         
 
-        marker_f1d935b3fd92651b75b3c741526ed564.bindPopup(popup_39f54610b5d13f94bf34e8a8c6eb4175)
+        marker_51a5760a4b280cf01af2415157fc268e.bindPopup(popup_4b3b12058e3a67b8d26754eacc4fbece)
         ;
 
         
     
     
-                marker_f1d935b3fd92651b75b3c741526ed564.setIcon(icon_2da691c042cfe3a0d5e34722e1d16b35);
+                marker_51a5760a4b280cf01af2415157fc268e.setIcon(icon_b2025278ac285c935e0dbf15fe88fbbf);
             
     
-            var marker_c1bd3a13d9f2964a193daf847d68b5eb = L.marker(
+            var marker_f6a183f5133c8e8566d406cefa8e2536 = L.marker(
                 [48.815164, -116.981784],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_2332c3ef39d3527eb358ed0eec891df7 = L.AwesomeMarkers.icon(
+            var icon_e7c6b97b2257a2baf1b0c21713fdf893 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -458,34 +534,34 @@
             );
         
     
-        var popup_db64126112a0180869dcf5d1fe1ac414 = L.popup({
+        var popup_250cb031a746f3aa76d457d1a8f9051e = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_d8ddfb9c1c2beb7ca7d7fd0918d9ba6d = $(`<div id="html_d8ddfb9c1c2beb7ca7d7fd0918d9ba6d" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 93.00%<br>             Latitude: 48.8152<br>             Longitude: -116.9818<br>             </div>`)[0];
-                popup_db64126112a0180869dcf5d1fe1ac414.setContent(html_d8ddfb9c1c2beb7ca7d7fd0918d9ba6d);
+                var html_8c30e2e77d430f25768fcaa7c5b2e2f5 = $(`<div id="html_8c30e2e77d430f25768fcaa7c5b2e2f5" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 92.00%<br>             Latitude: 48.8152<br>             Longitude: -116.9818<br>             </div>`)[0];
+                popup_250cb031a746f3aa76d457d1a8f9051e.setContent(html_8c30e2e77d430f25768fcaa7c5b2e2f5);
             
         
 
-        marker_c1bd3a13d9f2964a193daf847d68b5eb.bindPopup(popup_db64126112a0180869dcf5d1fe1ac414)
+        marker_f6a183f5133c8e8566d406cefa8e2536.bindPopup(popup_250cb031a746f3aa76d457d1a8f9051e)
         ;
 
         
     
     
-                marker_c1bd3a13d9f2964a193daf847d68b5eb.setIcon(icon_2332c3ef39d3527eb358ed0eec891df7);
+                marker_f6a183f5133c8e8566d406cefa8e2536.setIcon(icon_e7c6b97b2257a2baf1b0c21713fdf893);
             
     
-            var marker_9f7f5c03e7aa439a3ce2083cdac19b91 = L.marker(
+            var marker_a43a0310d3ce08888f44e32ff211751e = L.marker(
                 [48.789158, -116.957771],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_3dbf37dbb2337bb8a68e668a68795515 = L.AwesomeMarkers.icon(
+            var icon_8059dddd00f3e00c894b600c9fabab4e = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -496,34 +572,34 @@
             );
         
     
-        var popup_3fcec9b72928f791d42ed6a0dc3ce9dd = L.popup({
+        var popup_680428539f40bb4d124351fbb660198d = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_42a398d7331cceb8c56c7b356bf3e37e = $(`<div id="html_42a398d7331cceb8c56c7b356bf3e37e" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 95.00%<br>             Latitude: 48.7892<br>             Longitude: -116.9578<br>             </div>`)[0];
-                popup_3fcec9b72928f791d42ed6a0dc3ce9dd.setContent(html_42a398d7331cceb8c56c7b356bf3e37e);
+                var html_ef4e6197481b526c318a2f2efaaf6154 = $(`<div id="html_ef4e6197481b526c318a2f2efaaf6154" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 97.00%<br>             Latitude: 48.7892<br>             Longitude: -116.9578<br>             </div>`)[0];
+                popup_680428539f40bb4d124351fbb660198d.setContent(html_ef4e6197481b526c318a2f2efaaf6154);
             
         
 
-        marker_9f7f5c03e7aa439a3ce2083cdac19b91.bindPopup(popup_3fcec9b72928f791d42ed6a0dc3ce9dd)
+        marker_a43a0310d3ce08888f44e32ff211751e.bindPopup(popup_680428539f40bb4d124351fbb660198d)
         ;
 
         
     
     
-                marker_9f7f5c03e7aa439a3ce2083cdac19b91.setIcon(icon_3dbf37dbb2337bb8a68e668a68795515);
+                marker_a43a0310d3ce08888f44e32ff211751e.setIcon(icon_8059dddd00f3e00c894b600c9fabab4e);
             
     
-            var marker_68d4c4e93e66bdb02ff2f029a0cfc855 = L.marker(
+            var marker_e84bf6039264faa9c8f7d42db16cf4e9 = L.marker(
                 [48.796396, -116.970464],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_223fbda3666cec8d6e8896a31b582a06 = L.AwesomeMarkers.icon(
+            var icon_0063ba33559dde0dae27eb5467279e81 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -534,34 +610,34 @@
             );
         
     
-        var popup_afd8d44c475895345267bf1bb63a9c57 = L.popup({
+        var popup_7dee6ee9ec7aff8ccbe6e29793a51250 = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_174ac72591cfcda2ab64e5aabc60171b = $(`<div id="html_174ac72591cfcda2ab64e5aabc60171b" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 92.00%<br>             Latitude: 48.7964<br>             Longitude: -116.9705<br>             </div>`)[0];
-                popup_afd8d44c475895345267bf1bb63a9c57.setContent(html_174ac72591cfcda2ab64e5aabc60171b);
+                var html_4a1437c0003c12b533979f3a2b914807 = $(`<div id="html_4a1437c0003c12b533979f3a2b914807" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 90.00%<br>             Latitude: 48.7964<br>             Longitude: -116.9705<br>             </div>`)[0];
+                popup_7dee6ee9ec7aff8ccbe6e29793a51250.setContent(html_4a1437c0003c12b533979f3a2b914807);
             
         
 
-        marker_68d4c4e93e66bdb02ff2f029a0cfc855.bindPopup(popup_afd8d44c475895345267bf1bb63a9c57)
+        marker_e84bf6039264faa9c8f7d42db16cf4e9.bindPopup(popup_7dee6ee9ec7aff8ccbe6e29793a51250)
         ;
 
         
     
     
-                marker_68d4c4e93e66bdb02ff2f029a0cfc855.setIcon(icon_223fbda3666cec8d6e8896a31b582a06);
+                marker_e84bf6039264faa9c8f7d42db16cf4e9.setIcon(icon_0063ba33559dde0dae27eb5467279e81);
             
     
-            var marker_5516175d4591ea47037ecce39694f31b = L.marker(
+            var marker_0c6b3444151c338ae8a6e9b31de9df65 = L.marker(
                 [48.785087, -116.933929],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_7efa0ac4b611dd3ed42aeaa09b478924 = L.AwesomeMarkers.icon(
+            var icon_6109188efc0d3db349efaa8659867f46 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -572,34 +648,34 @@
             );
         
     
-        var popup_cbd8f1e00e9186c96cdd60fca8255b0e = L.popup({
+        var popup_82d48698743aa298a0d0e9d836d1794f = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_eafe2d4657fa76d6689bd73d37a229d9 = $(`<div id="html_eafe2d4657fa76d6689bd73d37a229d9" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 95.00%<br>             Latitude: 48.7851<br>             Longitude: -116.9339<br>             </div>`)[0];
-                popup_cbd8f1e00e9186c96cdd60fca8255b0e.setContent(html_eafe2d4657fa76d6689bd73d37a229d9);
+                var html_ae2990d8a88e64f5d0dddc3441e5ccda = $(`<div id="html_ae2990d8a88e64f5d0dddc3441e5ccda" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 89.00%<br>             Latitude: 48.7851<br>             Longitude: -116.9339<br>             </div>`)[0];
+                popup_82d48698743aa298a0d0e9d836d1794f.setContent(html_ae2990d8a88e64f5d0dddc3441e5ccda);
             
         
 
-        marker_5516175d4591ea47037ecce39694f31b.bindPopup(popup_cbd8f1e00e9186c96cdd60fca8255b0e)
+        marker_0c6b3444151c338ae8a6e9b31de9df65.bindPopup(popup_82d48698743aa298a0d0e9d836d1794f)
         ;
 
         
     
     
-                marker_5516175d4591ea47037ecce39694f31b.setIcon(icon_7efa0ac4b611dd3ed42aeaa09b478924);
+                marker_0c6b3444151c338ae8a6e9b31de9df65.setIcon(icon_6109188efc0d3db349efaa8659867f46);
             
     
-            var marker_b7c4146473c3f9618be3dab503b12ff1 = L.marker(
+            var marker_cfeeb1f5cc5a36fdc36217b65b717dba = L.marker(
                 [48.805554, -116.888647],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_568d49f598501a84087ddcdb549b7c83 = L.AwesomeMarkers.icon(
+            var icon_2c875838d5a1ef3e76680ec198b506f9 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -610,34 +686,34 @@
             );
         
     
-        var popup_ffb75f230e33fdbd685680ce7bde7ed7 = L.popup({
+        var popup_22864a6ecae1522988afa3e57e46cc3c = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_14965f75aa0510994d87a1ed7beaa4b3 = $(`<div id="html_14965f75aa0510994d87a1ed7beaa4b3" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 74.00%<br>             Latitude: 48.8056<br>             Longitude: -116.8886<br>             </div>`)[0];
-                popup_ffb75f230e33fdbd685680ce7bde7ed7.setContent(html_14965f75aa0510994d87a1ed7beaa4b3);
+                var html_ce5e689db630114662f9b1e776825355 = $(`<div id="html_ce5e689db630114662f9b1e776825355" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 68.00%<br>             Latitude: 48.8056<br>             Longitude: -116.8886<br>             </div>`)[0];
+                popup_22864a6ecae1522988afa3e57e46cc3c.setContent(html_ce5e689db630114662f9b1e776825355);
             
         
 
-        marker_b7c4146473c3f9618be3dab503b12ff1.bindPopup(popup_ffb75f230e33fdbd685680ce7bde7ed7)
+        marker_cfeeb1f5cc5a36fdc36217b65b717dba.bindPopup(popup_22864a6ecae1522988afa3e57e46cc3c)
         ;
 
         
     
     
-                marker_b7c4146473c3f9618be3dab503b12ff1.setIcon(icon_568d49f598501a84087ddcdb549b7c83);
+                marker_cfeeb1f5cc5a36fdc36217b65b717dba.setIcon(icon_2c875838d5a1ef3e76680ec198b506f9);
             
     
-            var marker_38ae694e389a13e9887279f245379525 = L.marker(
+            var marker_24af178e5fd898e227357dceb36f3420 = L.marker(
                 [48.751289, -116.994538],
                 {
 }
-            ).addTo(map_968546585a57989bce7a95db4b3d9761);
+            ).addTo(map_72adb472955f957928f6961f15bd16fa);
         
     
-            var icon_6de9279f1568566dbddb4676da22c2e6 = L.AwesomeMarkers.icon(
+            var icon_18f6e310e62f831dc6a9b467ebfaaca5 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "green",
   "iconColor": "white",
@@ -648,24 +724,24 @@
             );
         
     
-        var popup_06054ecd66e7bd837f6b1cbab9a0e66e = L.popup({
+        var popup_f07a86693ac2ee5aff90c77d60dd5cdc = L.popup({
   "maxWidth": 300,
 });
 
         
             
-                var html_a3ad5ed4e759310141e5b3c6c5f12713 = $(`<div id="html_a3ad5ed4e759310141e5b3c6c5f12713" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 93.00%<br>             Latitude: 48.7513<br>             Longitude: -116.9945<br>             </div>`)[0];
-                popup_06054ecd66e7bd837f6b1cbab9a0e66e.setContent(html_a3ad5ed4e759310141e5b3c6c5f12713);
+                var html_d888944ed3a0a6eff057dbcd65034197 = $(`<div id="html_d888944ed3a0a6eff057dbcd65034197" style="width: 100.0%; height: 100.0%;">             <b>Suitable Huckleberry Habitat</b><br>             Confidence: 91.00%<br>             Latitude: 48.7513<br>             Longitude: -116.9945<br>             </div>`)[0];
+                popup_f07a86693ac2ee5aff90c77d60dd5cdc.setContent(html_d888944ed3a0a6eff057dbcd65034197);
             
         
 
-        marker_38ae694e389a13e9887279f245379525.bindPopup(popup_06054ecd66e7bd837f6b1cbab9a0e66e)
+        marker_24af178e5fd898e227357dceb36f3420.bindPopup(popup_f07a86693ac2ee5aff90c77d60dd5cdc)
         ;
 
         
     
     
-                marker_38ae694e389a13e9887279f245379525.setIcon(icon_6de9279f1568566dbddb4676da22c2e6);
+                marker_24af178e5fd898e227357dceb36f3420.setIcon(icon_18f6e310e62f831dc6a9b467ebfaaca5);
             
 </script>
 </html>

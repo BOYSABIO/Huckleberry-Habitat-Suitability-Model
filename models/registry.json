@@ -409,7 +409,52 @@
         "random_forest"
       ],
       "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v10_20250705_141054",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-07-05T14:10:54.596749",
+      "file_path": "models\\huckleberry_model_dev_v10_20250705_141054.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
     }
   ],
-  "current": "huckleberry_model_dev_v9_20250705_132103"
+  "current": "huckleberry_model_dev_v10_20250705_141054"
 }
