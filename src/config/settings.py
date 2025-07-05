@@ -48,7 +48,7 @@ class DataSettings:
 class ModelSettings:
     """Model training and evaluation settings."""
     # Model parameters
-    model_type: str = "random_forest"  # "random_forest" or "ensemble"
+    model_type: str = "random_forest"  # "random_forest" or "ensemble" (random_forest is default)
     n_estimators: int = 100
     test_size: float = 0.2
     random_state: int = 42

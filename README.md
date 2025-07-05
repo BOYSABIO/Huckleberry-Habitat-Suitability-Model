@@ -29,7 +29,9 @@ Capstone-Microsoft/
 ├── models/                     # Trained models and registry
 ├── outputs/
 │   ├── maps/                   # HTML prediction maps
-│   └── predictions/            # CSV prediction results
+│   ├── predictions/            # CSV prediction results
+│   ├── summaries/              # Inference analysis and reports
+│   └── feature_importance/     # Feature importance analysis (CSV + plots)
 ├── src/                        # Main pipeline code
 │   ├── config/                 # Configuration management (settings + environments)
 │   ├── data_load/              # Data loading utilities
@@ -39,10 +41,16 @@ Capstone-Microsoft/
 │   ├── models/                 # Model training, registry, and feature analysis
 │   ├── pipelines/              # Training and inference pipelines
 │   └── utils/                  # Utilities (logging, data versioning)
+├── notebooks/                  # Development notebooks (documentation)
+├── archive/                    # Development artifacts and legacy scripts
+│   ├── scripts/                # Development scripts (used by notebooks)
+│   └── brainstorm.ipynb        # Early exploration notebook
 ├── logs/                       # Pipeline logs
 ├── docs/                       # Documentation
 └── tests/                      # Test files
 ```
+
+**Note**: The `archive/scripts/` folder contains development scripts used by the `notebooks/Huckleberry.ipynb` for documentation purposes. The production pipeline in `src/` is completely independent and uses its own modular architecture.
 
 ## Quick Start
 
@@ -104,7 +112,40 @@ python -m src.main train --environment development
 - **Elevation Data**: [Open-Elevation API](https://api.open-elevation.com/)
 - **Soil Data**: [SoilGrids API](https://www.isric.org/explore/soilgrids)
 
+## Outputs
+
+The pipeline generates several types of outputs:
+
+### Training Outputs
+- **`outputs/feature_importance/`**: Feature importance analysis
+  - `feature_importance_v{version_id}.csv`: Detailed feature importance scores
+  - `feature_importance_plot_v{version_id}.png`: Visualization of top features
+- **`data/processed/`**: Cleaned and processed data
+- **`data/enriched/`**: Data with environmental features
+- **`models/`**: Trained model files and registry
+
+### Inference Outputs
+- **`outputs/predictions/`**: Prediction results
+  - `inference_predictions.csv`: All predictions with probabilities
+  - `top_predictions_YYYYMMDD_HHMMSS.csv`: High-confidence predictions only
+- **`outputs/maps/`**: Interactive prediction maps
+  - `prediction_map.html`: Folium-based interactive map
+- **`outputs/summaries/`**: Analysis and summary reports
+  - `inference_summary_YYYYMMDD_HHMMSS.json`: Comprehensive summary report
+  - `confidence_plot_YYYYMMDD_HHMMSS.png`: Confidence distribution visualization
+- **Terminal Output**: Prediction statistics and summary
+
 ## Usage
+
+### Model Configuration
+
+The pipeline supports multiple model types and environments:
+
+- **Default Model**: Random Forest (recommended for most use cases)
+- **Alternative Models**: Ensemble (XGBoost + BernoulliNB) for advanced scenarios
+- **Development**: Uses test sample data, trains new versions, inference uses `random_forest_improved.joblib`
+- **Production**: Uses full dataset with production settings
+- **Testing**: Uses test datasets for validation
 
 ### Training Pipeline
 
@@ -159,8 +200,13 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 2. Uses specified GridMET date or latest available date (default)
 3. Extracts environmental data for coordinates
 4. Makes predictions using trained model
-5. Saves results to `outputs/predictions/inference_predictions.csv`
-6. Creates interactive map in `outputs/maps/prediction_map.html`
+5. Generates comprehensive outputs:
+   - **Predictions**: `outputs/predictions/inference_predictions.csv` (all predictions)
+   - **Top Predictions**: `outputs/predictions/top_predictions_YYYYMMDD_HHMMSS.csv` (high-confidence only)
+   - **Interactive Map**: `outputs/maps/prediction_map.html` (if enabled)
+   - **Summary Report**: `outputs/summaries/inference_summary_YYYYMMDD_HHMMSS.json`
+   - **Confidence Plot**: `outputs/summaries/confidence_plot_YYYYMMDD_HHMMSS.png`
+6. Displays prediction statistics in terminal
 
 **Date Specification:**
 - Use `--gridmet-date YYYY-MM-DD` to specify a particular date for climate data
@@ -170,22 +216,18 @@ python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --env
 
 ### Environment Options
 
-- **`development`**: Uses test sample data, smaller models, debug logging
-- **`production`**: Uses full dataset, larger models, info logging
+- **`development`**: 
+  - **Training**: Uses `occurrence_test_sample.txt` (17 records for fast development)
+  - **Inference**: Uses `random_forest_improved.joblib` (improved pre-trained model)
+  - **Settings**: Smaller models, debug logging
+- **`production`**: 
+  - **Training**: Uses `occurrence.txt` (full dataset)
+  - **Inference**: Automatically uses latest `huckleberry_model_prod_*` model from registry
+  - **Settings**: Larger models, info logging
 - **`testing`**: Uses test data, minimal models for quick testing
 - **`test_sample`**: Uses actual test sample data
 
-## Outputs
 
-### Training Outputs
-- **Processed Data**: `data/processed/huckleberry_processed.csv`
-- **Enriched Data**: `data/enriched/huckleberry_final_enriched.csv`
-- **Trained Model**: Saved to `models/` with versioning
-- **Model Registry**: `models/registry.json`
-
-### Inference Outputs
-- **Predictions CSV**: `outputs/predictions/inference_predictions.csv`
-- **Interactive Map**: `outputs/maps/prediction_map.html` (if enabled)
 
 ## Features
 
@@ -218,16 +260,16 @@ The pipeline uses environment-specific configurations with validation:
 
 ```python
 # Development (src/config/environments.py)
-- Uses test sample data
+- Uses test sample data (occurrence_test_sample.txt)
 - Smaller model parameters (n_estimators: 100)
 - Debug logging
-- Specific model file for inference
+- Inference uses specific model file (random_forest_improved.joblib)
 
 # Production
-- Uses full dataset
+- Uses full dataset (occurrence.txt)
 - Larger model parameters (n_estimators: 200)
 - Info logging
-- Latest model from registry
+- Inference automatically selects latest huckleberry_model_prod_* from registry
 
 # Testing
 - Uses test data

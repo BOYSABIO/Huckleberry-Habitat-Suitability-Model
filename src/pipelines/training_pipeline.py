@@ -287,6 +287,118 @@ class TrainingPipeline:
         
         return df_selected
     
+    @log_pipeline_step("Feature Importance Generation")
+    def generate_feature_importance_outputs(self, model, version_id: str) -> None:
+        """Generate feature importance outputs (CSV and plots)."""
+        self.logger.info("Generating feature importance outputs")
+        
+        try:
+            # Get feature importance from model
+            if hasattr(model, 'get_feature_importance'):
+                importance_df = model.get_feature_importance()
+                
+                # Debug: Check if all values are zero
+                if importance_df.empty:
+                    self.logger.error("Feature importance DataFrame is empty!")
+                    return
+                
+                if importance_df['importance'].sum() == 0:
+                    self.logger.warning("All feature importance values are zero!")
+                    self.logger.info(f"Feature importance shape: {importance_df.shape}")
+                    self.logger.info(f"Feature names: {importance_df['feature'].tolist()}")
+                    self.logger.info(f"Importance values: {importance_df['importance'].tolist()}")
+                
+            else:
+                self.logger.warning("Model does not support feature importance")
+                return
+            
+            # Create output directory
+            output_dir = Path("outputs/feature_importance")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Save CSV
+            csv_path = output_dir / f"feature_importance_v{version_id}.csv"
+            importance_df.to_csv(csv_path, index=False)
+            self.logger.info(f"Feature importance CSV saved: {csv_path}")
+            
+            # Create visualization
+            self.create_feature_importance_plot(importance_df, version_id)
+            
+        except Exception as e:
+            self.logger.error(f"Feature importance generation failed: {e}")
+    
+    def create_feature_importance_plot(
+        self, 
+        importance_df: pd.DataFrame, 
+        version_id: str
+    ) -> None:
+        """Create feature importance visualization."""
+        try:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            
+            # Set style
+            plt.style.use('default')
+            sns.set_palette("husl")
+            
+            # Create figure
+            fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 8))
+            
+            # Top features bar plot
+            top_features = importance_df.head(10)
+            colors = sns.color_palette("husl", len(top_features))
+            
+            bars = ax1.barh(
+                range(len(top_features)), 
+                top_features['importance'],
+                color=colors
+            )
+            ax1.set_yticks(range(len(top_features)))
+            ax1.set_yticklabels(top_features['feature'])
+            ax1.set_xlabel('Feature Importance')
+            ax1.set_title(f'Top 10 Feature Importance\n(Model v{version_id})')
+            ax1.invert_yaxis()
+            
+            # Add value labels on bars
+            for i, (bar, value) in enumerate(zip(bars, top_features['importance'])):
+                ax1.text(
+                    bar.get_width() + 0.001, 
+                    bar.get_y() + bar.get_height()/2,
+                    f'{value:.3f}',
+                    va='center',
+                    fontsize=9
+                )
+            
+            # Pie chart for top 5 features
+            top_5 = importance_df.head(5)
+            other_importance = importance_df.iloc[5:]['importance'].sum()
+            
+            pie_data = list(top_5['importance']) + [other_importance]
+            pie_labels = list(top_5['feature']) + ['Others']
+            
+            ax2.pie(
+                pie_data, 
+                labels=pie_labels, 
+                autopct='%1.1f%%',
+                startangle=90
+            )
+            ax2.set_title(f'Feature Importance Distribution\n(Model v{version_id})')
+            
+            plt.tight_layout()
+            
+            # Save plot
+            output_dir = Path("outputs/feature_importance")
+            plot_path = output_dir / f"feature_importance_plot_v{version_id}.png"
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+            self.logger.info(f"Feature importance plot saved: {plot_path}")
+            
+        except ImportError:
+            self.logger.warning("matplotlib/seaborn not available, skipping plot")
+        except Exception as e:
+            self.logger.error(f"Plot creation failed: {e}")
+    
     def run(self) -> Dict[str, Any]:
         """
         Run the complete training pipeline.
@@ -336,7 +448,10 @@ class TrainingPipeline:
             # Step 12: Register model
             version_id = self.register_model(model, metrics, df)
             
-            # Step 13: Track data versioning
+            # Step 13: Generate feature importance outputs
+            self.generate_feature_importance_outputs(model, version_id)
+            
+            # Step 14: Track data versioning
             version_id_data = self.data_versioning.track_transformation(
                 df=df,
                 description="Complete training pipeline run",

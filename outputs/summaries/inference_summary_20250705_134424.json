@@ -1,0 +1,44 @@
+{
+  "inference_summary": {
+    "timestamp": "2025-07-05T13:44:24.376025",
+    "model_version": "direct_model",
+    "total_coordinates": 17,
+    "valid_coordinates": 17,
+    "suitable_habitat_count": 15,
+    "suitability_percentage": 88.23529411764706,
+    "average_confidence": 0.8471,
+    "confidence_threshold": 0.5,
+    "confidence_distribution": {
+      "high_confidence": 13,
+      "medium_confidence": 2,
+      "low_confidence": 2
+    },
+    "top_locations": [
+      {
+        "decimalLatitude": 44.7,
+        "decimalLongitude": -116.3,
+        "probability": 0.96
+      },
+      {
+        "decimalLatitude": 48.687832,
+        "decimalLongitude": -116.924988,
+        "probability": 0.96
+      },
+      {
+        "decimalLatitude": 48.698033,
+        "decimalLongitude": -116.953418,
+        "probability": 0.96
+      },
+      {
+        "decimalLatitude": 48.769863,
+        "decimalLongitude": -116.94878,
+        "probability": 0.96
+      },
+      {
+        "decimalLatitude": 48.79045,
+        "decimalLongitude": -117.027455,
+        "probability": 0.96
+      }
+    ]
+  }
+}

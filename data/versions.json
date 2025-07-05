@@ -161,7 +161,88 @@
           "train_size": 12
         }
       }
+    },
+    {
+      "id": "v7_20250705_130308",
+      "timestamp": "2025-07-05T13:03:08.227609",
+      "data_hash": "38505e7461d38d07549cd8c0ad273957",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v7_20250705_130307",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    },
+    {
+      "id": "v8_20250705_131501",
+      "timestamp": "2025-07-05T13:15:01.928154",
+      "data_hash": "a68f0a0e4cd904a6eb9cbd1e0b9b068e",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v8_20250705_131501",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 4,
+          "train_size": 12
+        }
+      }
+    },
+    {
+      "id": "v9_20250705_132104",
+      "timestamp": "2025-07-05T13:21:04.356539",
+      "data_hash": "03f4f0d7a2a999a5fb52142963917df3",
+      "description": "Complete training pipeline run",
+      "input_files": [
+        "data/raw/occurrence_test_sample.txt"
+      ],
+      "output_files": [
+        "huckleberry_processed.csv",
+        "huckleberry_final_enriched.csv"
+      ],
+      "parameters": {
+        "pseudo_absence_ratio": 3,
+        "pseudo_absence_buffer_km": 5.0,
+        "model_type": "random_forest",
+        "n_estimators": 100
+      },
+      "metadata": {
+        "model_version_id": "huckleberry_model_dev_v9_20250705_132103",
+        "training_metrics": {
+          "accuracy": 1.0,
+          "test_size": 3,
+          "train_size": 12
+        }
+      }
     }
   ],
-  "current": "v6_20250702_175114"
+  "current": "v9_20250705_132104"
 }

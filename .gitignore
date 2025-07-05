@@ -43,7 +43,11 @@ venv.bak/
 Thumbs.db
 
 # Project specific
+# Ignore large model files but keep essential ones
 models/*.joblib
+models/*.pkl
+!models/random_forest_improved.joblib
+!models/registry.json  # Keep registry
 analysis/*.csv
 analysis/*.json
 logs/*.log

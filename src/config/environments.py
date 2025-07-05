@@ -34,7 +34,7 @@ def _get_development_settings() -> Settings:
     """Development environment settings."""
     return Settings(
         data=DataSettings(
-            raw_data_path="data/raw/occurrence_test_sample.txt",
+            raw_data_path="data/raw/occurrence_test_sample.txt",  # Use test sample for fast development
             processed_data_path="data/processed/",
             enriched_data_path="data/enriched/",
             pseudo_absence_ratio=3,
@@ -42,7 +42,7 @@ def _get_development_settings() -> Settings:
             random_seed=42
         ),
         model=ModelSettings(
-            model_type="random_forest",
+            model_type="random_forest",  # Default to random forest
             n_estimators=100,
             test_size=0.2,
             random_state=42,
@@ -50,7 +50,7 @@ def _get_development_settings() -> Settings:
             model_name="huckleberry_model_dev"
         ),
         inference=InferenceSettings(
-            model_file_path="models/random_forest_improved.joblib"
+            model_file_path="models/random_forest_improved.joblib"  # Use improved random forest
         ),
         logging=LoggingSettings(
             level="DEBUG",
@@ -71,14 +71,16 @@ def _get_production_settings() -> Settings:
             random_seed=42
         ),
         model=ModelSettings(
-            model_type="ensemble",
+            model_type="random_forest",  # Default to random forest for production
             n_estimators=200,
             test_size=0.2,
             random_state=42,
             model_registry_path="models/",
             model_name="huckleberry_model_prod"
         ),
-        inference=InferenceSettings(),
+        inference=InferenceSettings(
+            model_file_path=None  # Will auto-select latest production model
+        ),
         logging=LoggingSettings(
             level="INFO",
             log_file="logs/pipeline_prod.log"

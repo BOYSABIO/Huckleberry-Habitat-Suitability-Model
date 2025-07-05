@@ -274,7 +274,142 @@
         "random_forest"
       ],
       "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v7_20250705_130307",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-07-05T13:03:07.681666",
+      "file_path": "models\\huckleberry_model_dev_v7_20250705_130307.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v8_20250705_131501",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-07-05T13:15:01.611959",
+      "file_path": "models\\huckleberry_model_dev_v8_20250705_131501.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": {
+          "1": 16
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
+    },
+    {
+      "version_id": "huckleberry_model_dev_v9_20250705_132103",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-07-05T13:21:04.033758",
+      "file_path": "models\\huckleberry_model_dev_v9_20250705_132103.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 3,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 15,
+        "occurrence_distribution": {
+          "1": 15
+        },
+        "feature_count": 12
+      },
+      "parameters": {
+        "n_estimators": 100,
+        "test_size": 0.2,
+        "random_state": 42
+      },
+      "description": "Trained random_forest model",
+      "tags": [
+        "huckleberry",
+        "habitat_prediction",
+        "random_forest"
+      ],
+      "status": "active"
     }
   ],
-  "current": "huckleberry_model_dev_v6_20250702_175114"
+  "current": "huckleberry_model_dev_v9_20250705_132103"
 }

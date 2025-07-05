@@ -87,8 +87,18 @@ class InferencePipeline:
                         self.model_data['feature_names'] = self.feature_names
                         self.logger.info(f"Extracted feature names from model: {self.feature_names}")
             else:
-                # Load from registry
-                self.model_data = self.model_registry.load_model()
+                # Load from registry - handle production vs development
+                if self.settings.model.model_name == "huckleberry_model_prod":
+                    # For production, get the latest production model
+                    self.model_data = self.model_registry.get_latest_model_by_name("huckleberry_model_prod")
+                    if not self.model_data:
+                        # Fallback to any available model if no production model exists
+                        self.logger.warning("No production model found, falling back to latest available model")
+                        self.model_data = self.model_registry.load_model()
+                else:
+                    # For development, get the latest model (or specific one if configured)
+                    self.model_data = self.model_registry.load_model()
+                
                 self.model = self.model_data['model']
                 self.feature_names = self.model_data['feature_names']
                 self.logger.info(f"Loaded model: {self.model_data['version_id']}")
@@ -312,6 +322,178 @@ class InferencePipeline:
         self.logger.info(f"Predictions saved to: {output_path}")
         return str(output_path)
     
+    def generate_inference_summary(
+        self, 
+        results_df: pd.DataFrame, 
+        confidence_threshold: float
+    ) -> str:
+        """Generate a comprehensive inference summary report."""
+        self.logger.info("Generating inference summary report")
+        
+        try:
+            # Calculate summary statistics
+            total_coordinates = len(results_df)
+            suitable_count = sum(results_df['probability'] >= confidence_threshold)
+            avg_confidence = results_df['probability'].mean()
+            
+            # Confidence distribution
+            high_confidence = sum(results_df['probability'] >= 0.8)
+            medium_confidence = sum((results_df['probability'] >= 0.6) & (results_df['probability'] < 0.8))
+            low_confidence = sum(results_df['probability'] < 0.6)
+            
+            # Top locations (highest confidence)
+            top_locations = results_df.nlargest(5, 'probability')[
+                ['decimalLatitude', 'decimalLongitude', 'probability']
+            ].to_dict('records')
+            
+            # Create summary dictionary
+            summary = {
+                "inference_summary": {
+                    "timestamp": pd.Timestamp.now().isoformat(),
+                    "model_version": self.model_data['version_id'],
+                    "total_coordinates": total_coordinates,
+                    "valid_coordinates": total_coordinates,
+                    "suitable_habitat_count": suitable_count,
+                    "suitability_percentage": (suitable_count / total_coordinates) * 100,
+                    "average_confidence": round(avg_confidence, 4),
+                    "confidence_threshold": confidence_threshold,
+                    "confidence_distribution": {
+                        "high_confidence": high_confidence,
+                        "medium_confidence": medium_confidence,
+                        "low_confidence": low_confidence
+                    },
+                    "top_locations": top_locations
+                }
+            }
+            
+            # Save to JSON
+            output_dir = Path("outputs/summaries")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            summary_path = output_dir / f"inference_summary_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.json"
+            
+            import json
+            with open(summary_path, 'w') as f:
+                json.dump(summary, f, indent=2, default=str)
+            
+            self.logger.info(f"Inference summary saved: {summary_path}")
+            return str(summary_path)
+            
+        except Exception as e:
+            self.logger.error(f"Summary generation failed: {e}")
+            return None
+    
+    def save_top_predictions(
+        self, 
+        results_df: pd.DataFrame, 
+        confidence_threshold: float
+    ) -> str:
+        """Save high-confidence predictions to a separate CSV."""
+        self.logger.info("Saving top predictions (high confidence)")
+        
+        try:
+            # Filter for high-confidence predictions
+            top_predictions = results_df[results_df['probability'] >= confidence_threshold].copy()
+            
+            if len(top_predictions) == 0:
+                self.logger.warning("No high-confidence predictions found")
+                return None
+            
+            # Sort by confidence (highest first)
+            top_predictions = top_predictions.sort_values('probability', ascending=False)
+            
+            # Save to CSV
+            output_dir = Path("outputs/predictions")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            top_predictions_path = output_dir / f"top_predictions_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            top_predictions.to_csv(top_predictions_path, index=False)
+            
+            self.logger.info(f"Top predictions saved: {top_predictions_path} ({len(top_predictions)} records)")
+            return str(top_predictions_path)
+            
+        except Exception as e:
+            self.logger.error(f"Top predictions save failed: {e}")
+            return None
+    
+    def create_confidence_plot(self, results_df: pd.DataFrame) -> str:
+        """Create a confidence distribution plot."""
+        self.logger.info("Creating confidence distribution plot")
+        
+        try:
+            import matplotlib.pyplot as plt
+            import seaborn as sns
+            
+            # Set style
+            plt.style.use('default')
+            sns.set_palette("husl")
+            
+            # Create figure with subplots
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 12))
+            
+            # 1. Confidence histogram
+            ax1.hist(results_df['probability'], bins=20, alpha=0.7, color='skyblue', edgecolor='black')
+            ax1.set_xlabel('Confidence Score')
+            ax1.set_ylabel('Frequency')
+            ax1.set_title('Confidence Distribution')
+            ax1.grid(True, alpha=0.3)
+            
+            # 2. Confidence vs suitability
+            colors = ['red' if p < 0.5 else 'green' for p in results_df['probability']]
+            ax2.scatter(range(len(results_df)), results_df['probability'], c=colors, alpha=0.6)
+            ax2.axhline(y=0.5, color='orange', linestyle='--', label='Suitability Threshold')
+            ax2.set_xlabel('Location Index')
+            ax2.set_ylabel('Confidence Score')
+            ax2.set_title('Confidence by Location')
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+            
+            # 3. Confidence categories pie chart
+            high_conf = sum(results_df['probability'] >= 0.8)
+            med_conf = sum((results_df['probability'] >= 0.6) & (results_df['probability'] < 0.8))
+            low_conf = sum(results_df['probability'] < 0.6)
+            
+            categories = ['High (≥0.8)', 'Medium (0.6-0.8)', 'Low (<0.6)']
+            values = [high_conf, med_conf, low_conf]
+            colors_pie = ['green', 'orange', 'red']
+            
+            ax3.pie(values, labels=categories, colors=colors_pie, autopct='%1.1f%%', startangle=90)
+            ax3.set_title('Confidence Categories')
+            
+            # 4. Summary statistics
+            stats_text = f"""
+            Total Locations: {len(results_df)}
+            Average Confidence: {results_df['probability'].mean():.3f}
+            High Confidence (≥0.8): {high_conf}
+            Medium Confidence (0.6-0.8): {med_conf}
+            Low Confidence (<0.6): {low_conf}
+            """
+            
+            ax4.text(0.1, 0.5, stats_text, transform=ax4.transAxes, fontsize=12,
+                    verticalalignment='center', bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgray"))
+            ax4.set_title('Summary Statistics')
+            ax4.axis('off')
+            
+            plt.tight_layout()
+            
+            # Save plot
+            output_dir = Path("outputs/summaries")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            plot_path = output_dir / f"confidence_plot_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.png"
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+            plt.close()
+            
+            self.logger.info(f"Confidence plot saved: {plot_path}")
+            return str(plot_path)
+            
+        except ImportError:
+            self.logger.warning("matplotlib/seaborn not available, skipping plot")
+            return None
+        except Exception as e:
+            self.logger.error(f"Plot creation failed: {e}")
+            return None
+    
     def run(
         self,
         coordinates: List[Tuple[float, float]],
@@ -347,7 +529,12 @@ class InferencePipeline:
             # Step 5: Save predictions to CSV
             csv_path = self.save_predictions_csv(results_df)
             
-            # Step 6: Create map (optional)
+            # Step 6: Generate additional outputs
+            summary_path = self.generate_inference_summary(results_df, confidence_threshold)
+            top_predictions_path = self.save_top_predictions(results_df, confidence_threshold)
+            confidence_plot_path = self.create_confidence_plot(results_df)
+            
+            # Step 7: Create map (optional)
             map_path = None
             if create_map:
                 map_path = self.create_prediction_map(
@@ -369,6 +556,9 @@ class InferencePipeline:
                 "predictions": results_df,
                 "csv_path": csv_path,
                 "map_path": map_path,
+                "summary_path": summary_path,
+                "top_predictions_path": top_predictions_path,
+                "confidence_plot_path": confidence_plot_path,
                 "model_version": self.model_data['version_id']
             }
             

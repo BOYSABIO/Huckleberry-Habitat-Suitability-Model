@@ -165,6 +165,38 @@ class ModelRegistry:
                 return entry
         return None
     
+    def get_latest_model_by_name(self, model_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Get the latest model by model name.
+        
+        Args:
+            model_name: Name of the model to find
+            
+        Returns:
+            Latest model data dictionary or None if not found
+        """
+        # Find all models with the given name
+        matching_models = []
+        for entry in self.registry["models"]:
+            if entry["model_name"] == model_name:
+                matching_models.append(entry)
+        
+        if not matching_models:
+            return None
+        
+        # Sort by timestamp (newest first) and return the latest
+        latest_model = max(matching_models, key=lambda x: x["timestamp"])
+        
+        # Load the actual model data
+        model_file = Path(latest_model["file_path"])
+        if not model_file.exists():
+            self.logger.warning(f"Model file not found: {model_file}")
+            return None
+        
+        model_data = joblib.load(model_file)
+        self.logger.info(f"Loaded latest {model_name} model: {latest_model['version_id']}")
+        return model_data
+    
     def set_current_model(self, version_id: str):
         """Set the current model version."""
         # Verify model exists

@@ -284,23 +284,49 @@ class HuckleberryPredictor:
         if not self.is_fitted:
             raise ValueError("Model must be fitted before getting feature importance")
         
-        # Try to get feature importance from XGBoost
+        # Try to get feature importance from XGBoost within the StackingEstimator
         try:
-            xgb_model = self.model.named_steps['stackingestimator'].estimator
+            # Access the XGBoost model within the StackingEstimator
+            stacking_estimator = self.model.named_steps['stackingestimator']
+            xgb_model = stacking_estimator.estimator
             importance = xgb_model.feature_importances_
-        except (KeyError, AttributeError):
-            # Fallback to random forest if available
+            
+            logger.info(f"Successfully extracted feature importance from XGBoost model")
+            
+        except (KeyError, AttributeError) as e:
+            logger.warning(f"Could not extract feature importance from XGBoost: {e}")
+            
+            # Try alternative approaches
             try:
-                rf_model = self.model.named_steps['randomforestclassifier']
-                importance = rf_model.feature_importances_
-            except (KeyError, AttributeError):
-                logger.warning("Could not extract feature importance from model")
-                return pd.DataFrame()
+                # Try to access the model directly
+                if hasattr(self.model, 'named_steps'):
+                    for step_name, step in self.model.named_steps.items():
+                        if hasattr(step, 'feature_importances_'):
+                            importance = step.feature_importances_
+                            logger.info(f"Found feature importance in step: {step_name}")
+                            break
+                    else:
+                        raise AttributeError("No step with feature_importances_ found")
+                else:
+                    raise AttributeError("Model has no named_steps")
+                    
+            except (KeyError, AttributeError) as e2:
+                logger.error(f"Could not extract feature importance from model: {e2}")
+                # Return empty DataFrame with feature names for debugging
+                return pd.DataFrame({
+                    'feature': self.feature_names,
+                    'importance': [0.0] * len(self.feature_names)
+                }).sort_values('importance', ascending=False)
         
+        # Create feature importance DataFrame
         feature_importance = pd.DataFrame({
             'feature': self.feature_names,
             'importance': importance
         }).sort_values('importance', ascending=False)
+        
+        # Log some debugging info
+        logger.info(f"Feature importance shape: {feature_importance.shape}")
+        logger.info(f"Top 3 features: {feature_importance.head(3).to_dict('records')}")
         
         return feature_importance
 
