@@ -2,10 +2,8 @@
 
 <p align="center">
   <img src="docs/assets/ezgif.com-video-to-gif-converter.gif" width="100%" alt="Huckleberry Detection Demo" />
-  <br><em>Huckleberry Detection Demo</em>
+  <br><em>A comprehensive MLOps pipeline for predicting huckleberry habitat suitability using environmental data, machine learning, and geospatial analysis.</em>
 </p>
-
-A comprehensive MLOps pipeline for predicting huckleberry habitat suitability using environmental data, machine learning, and geospatial analysis.
 
 ## Project Overview
 
