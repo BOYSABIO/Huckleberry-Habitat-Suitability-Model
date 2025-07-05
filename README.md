@@ -46,6 +46,11 @@ Capstone-Microsoft/
 │   └── brainstorm.ipynb        # Early exploration notebook
 ├── logs/                       # Pipeline logs
 ├── docs/                       # Documentation
+│   ├── assets/                 # High-quality images and GIFs
+│   ├── meeting_notes/          # Meeting documentation
+│   ├── notes/                  # Project notes
+│   ├── Project_&_Guidelines/   # Project guidelines
+│   └── references/             # Reference materials
 └── tests/                      # Test files
 ```
 
