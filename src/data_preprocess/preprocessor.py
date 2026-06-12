@@ -5,12 +5,12 @@ This module handles the initial cleaning and filtering of GBIF occurrence data,
 including coordinate validation, date processing, and geographic filtering.
 """
 
-import pandas as pd
-import numpy as np
 import logging
-from typing import Dict
-from sklearn.neighbors import BallTree
-from datetime import timedelta
+
+import numpy as np
+import pandas as pd
+
+from src.features.temporal import add_season_column
 
 logger = logging.getLogger(__name__)
 
@@ -248,39 +248,12 @@ class DataPreprocessor:
         df['month'] = df['datetime'].dt.month
         df['day'] = df['datetime'].dt.day
         
-        # Add season_num feature
-        df = self._add_season_feature(df)
+        df = add_season_column(df)
         
         total_valid = df['datetime'].notna().sum()
         total_invalid = df['datetime'].isna().sum()
         logger.info(f"Date processing complete: {total_valid} valid dates, {total_invalid} invalid dates")
         
-        return df
-
-    def _add_season_feature(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Add season_num column based on month.
-        Winter: 0 (Dec, Jan, Feb), Spring: 1 (Mar, Apr, May), 
-        Summer: 2 (Jun, Jul, Aug), Fall: 3 (Sep, Oct, Nov)
-        """
-        logger.info("Adding season_num feature...")
-        
-        # Direct mapping from month to season_num
-        def get_season_num(month):
-            if month in [12, 1, 2]:
-                return 0  # Winter
-            elif month in [3, 4, 5]:
-                return 1  # Spring
-            elif month in [6, 7, 8]:
-                return 2  # Summer
-            elif month in [9, 10, 11]:
-                return 3  # Fall
-            else:
-                return np.nan
-        
-        df['season_num'] = df['month'].apply(get_season_num)
-        season_counts = df['season_num'].value_counts().sort_index()
-        logger.info(f"Season distribution: {dict(season_counts)}")
         return df
 
     def _remove_duplicates(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -290,92 +263,6 @@ class DataPreprocessor:
         df = df.drop_duplicates(subset=['gbifID'])
         logger.info(f"Duplicate removal: {original_count} -> {len(df)} records (using gbifID)")
         return df
-
-    def create_pseudo_absences(self, df: pd.DataFrame, ratio: float = 3.0) -> pd.DataFrame:
-        """
-        Create pseudo-absences using the improved algorithm from pseudoabsence.py.
-        """
-        logger.info(f"Creating pseudo-absences with ratio {ratio}:1")
-        
-        np.random.seed(42)
-        df_copy = df.copy()
-        df_copy['occurrence'] = 1  # Ensure all are marked as occurrences
-
-        coords_rad = np.radians(df_copy[["decimalLatitude", "decimalLongitude"]].values)
-        tree = BallTree(coords_rad, metric="haversine")
-        buffer_rad = 5.0 / 6371  # 5km buffer, Earth's radius in km
-
-        num_absences = int(df_copy.shape[0] * ratio)
-        pseudo_points = []
-
-        lat_range = (df_copy["decimalLatitude"].min(), df_copy["decimalLatitude"].max())
-        lon_range = (df_copy["decimalLongitude"].min(), df_copy["decimalLongitude"].max())
-        date_range = (pd.to_datetime(df_copy["datetime"]).min(),
-                     pd.to_datetime(df_copy["datetime"]).max())
-
-        # Get list of columns to preserve structure
-        gridmet_columns = [col for col in df_copy.columns if col != "occurrence"]
-
-        attempts = 0
-        max_attempts = num_absences * 20
-        while len(pseudo_points) < num_absences and attempts < max_attempts:
-            lat = np.random.uniform(*lat_range)
-            lon = np.random.uniform(*lon_range)
-            coord_rad = np.radians([[lat, lon]])
-
-            dist, _ = tree.query(coord_rad, k=1)
-            if dist[0][0] >= buffer_rad:
-                random_date = (date_range[0] +
-                              timedelta(days=np.random.randint(
-                                  0, (date_range[1] - date_range[0]).days + 1)))
-                row = {
-                    "decimalLatitude": lat,
-                    "decimalLongitude": lon,
-                    "datetime": random_date.strftime("%Y-%m-%d"),
-                    "year": random_date.year,
-                    "month": random_date.month,
-                    "day": random_date.day,
-                    "occurrence": 0
-                }
-                # Fill rest of columns with NaN to match structure
-                for col in gridmet_columns:
-                    if col not in row:
-                        row[col] = np.nan
-                pseudo_points.append(row)
-            attempts += 1
-
-        pseudo_df = pd.DataFrame(pseudo_points)[df_copy.columns]  # reorder to match
-        combined_df = (pd.concat([df_copy, pseudo_df], ignore_index=True)
-                       .sample(frac=1, random_state=42)
-                       .reset_index(drop=True))
-        
-        logger.info(f"Created {len(pseudo_points)} pseudo-absences, total dataset: {len(combined_df)} records")
-        return combined_df
-
-    def get_cleaning_summary(self, original_df: pd.DataFrame, cleaned_df: pd.DataFrame) -> Dict:
-        summary = {
-            'original_records': len(original_df),
-            'cleaned_records': len(cleaned_df),
-            'records_removed': len(original_df) - len(cleaned_df),
-            'retention_rate': len(cleaned_df) / len(original_df) * 100,
-            'geographic_bounds': self.us_bounds,
-            'date_range': {
-                'min_year': cleaned_df['year'].min(),
-                'max_year': cleaned_df['year'].max(),
-                'date_span_years': cleaned_df['year'].max() - cleaned_df['year'].min()
-            }
-        }
-        return summary
-
-    def select_columns(self, df: pd.DataFrame) -> pd.DataFrame:
-        essential = [
-            'gbifID', 'decimalLatitude', 'decimalLongitude',
-            'year', 'month', 'day', 'datetime', 'occurrence'
-        ]
-        available = [col for col in essential if col in df.columns]
-        logger.info(f"Selecting essential columns for next pipeline step...")
-        logger.info(f"Selected {len(available)} essential columns: {available}")
-        return df[available]
 
     def filter_gridmet_bounds(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -452,5 +339,3 @@ class DataPreprocessor:
         filtered_df = df[mask].copy()
         logger.info(f"Temporal filtering: {len(df)} -> {len(filtered_df)} records")
         return filtered_df
-
-    # NOTE: Call select_columns(df) at the very end of your pipeline, after geocoding/manual geocoding. 

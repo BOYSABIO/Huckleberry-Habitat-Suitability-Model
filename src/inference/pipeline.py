@@ -4,7 +4,7 @@ Location-based inference orchestration.
 pipeline.py coordinates the full infer workflow:
   coordinates → environmental features → predictor → reports
 
-For feature-only scoring (API path), use HabitatPredictor in model.artifact directly.
+For feature-only scoring (API path), use HabitatPredictor in model.predictor directly.
 """
 
 from typing import Any, Dict, List, Tuple
@@ -14,8 +14,9 @@ import pandas as pd
 from src.config.settings import Settings
 from src.data_validation.validate import validate_inference_data
 from src.features.environmental import EnvironmentalDataExtractor
+from src.features.temporal import add_season_column
 from src.inference import reporting
-from src.model.artifact import HabitatPredictor, load_predictor_from_settings
+from src.model.predictor import HabitatPredictor, load_predictor_from_settings
 from src.utils.logging_config import get_logger, log_pipeline_step
 
 logger = get_logger("inference_pipeline")
@@ -54,17 +55,7 @@ class InferencePipeline:
             df["year"] = df["datetime"].dt.year
             df["month"] = df["datetime"].dt.month
             df["day"] = df["datetime"].dt.day
-
-            def month_to_season_num(month: int) -> int:
-                if month in [12, 1, 2]:
-                    return 0
-                if month in [3, 4, 5]:
-                    return 1
-                if month in [6, 7, 8]:
-                    return 2
-                return 3
-
-            df["season_num"] = df["month"].apply(month_to_season_num)
+            df = add_season_column(df)
 
         return df
 

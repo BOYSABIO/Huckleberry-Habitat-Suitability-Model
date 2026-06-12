@@ -1,12 +1,9 @@
-"""
-Shared feature-preparation utilities for model training and inference.
-"""
+"""Feature-matrix preparation for model training and scoring."""
 
 from typing import List, Tuple
 
 import pandas as pd
 
-# Columns excluded from the modeling feature matrix
 EXCLUDE_COLS = [
     "gbifID",
     "gridmet_lat",
@@ -33,8 +30,7 @@ def prepare_training_features(
     drop_cols = [target_col] + [col for col in EXCLUDE_COLS if col in data.columns]
     features = data.drop(drop_cols, axis=1)
     target = data[target_col]
-    feature_names = features.columns.tolist()
-    return features, target, feature_names
+    return features, target, features.columns.tolist()
 
 
 def select_inference_features(

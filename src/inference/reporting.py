@@ -83,6 +83,14 @@ def save_top_predictions(
     return str(path)
 
 
+def _marker_style(probability: float, confidence_threshold: float) -> dict:
+    if probability >= confidence_threshold:
+        return {"color": "green", "label": "Suitable (high confidence)"}
+    if probability >= 0.5:
+        return {"color": "orange", "label": "Possible (medium confidence)"}
+    return {"color": "red", "label": "Unlikely (low confidence)"}
+
+
 def create_prediction_map(
     results_df: pd.DataFrame,
     output_path: str = "outputs/maps/prediction_map.html",
@@ -90,33 +98,69 @@ def create_prediction_map(
 ) -> Optional[str]:
     import folium
 
-    suitable_df = results_df[results_df["probability"] >= confidence_threshold].copy()
-    if len(suitable_df) == 0:
-        logger.warning("No suitable habitat found above confidence threshold")
+    if len(results_df) == 0:
+        logger.warning("No coordinates to map")
         return None
 
+    suitable_count = int((results_df["probability"] >= confidence_threshold).sum())
+    if suitable_count == 0:
+        logger.info(
+            "No predictions above confidence threshold %.0f%% — map will show all points color-coded",
+            confidence_threshold * 100,
+        )
+
     map_center = [
-        suitable_df["decimalLatitude"].mean(),
-        suitable_df["decimalLongitude"].mean(),
+        results_df["decimalLatitude"].mean(),
+        results_df["decimalLongitude"].mean(),
     ]
-    m = folium.Map(location=map_center, zoom_start=8)
-    for _, row in suitable_df.iterrows():
+    zoom = 8 if len(results_df) > 1 else 10
+    m = folium.Map(location=map_center, zoom_start=zoom)
+
+    for _, row in results_df.iterrows():
+        prob = float(row["probability"])
+        style = _marker_style(prob, confidence_threshold)
+        elevation = row.get("elevation")
+        elev_text = f"{float(elevation):.0f} m" if pd.notna(elevation) else "n/a"
         popup_text = (
-            f"<b>Suitable Huckleberry Habitat</b><br>"
-            f"Confidence: {row['probability']:.2%}<br>"
+            f"<b>Huckleberry habitat prediction</b><br>"
+            f"Confidence: {prob:.1%}<br>"
+            f"Prediction: {'Suitable' if row.get('prediction', prob >= 0.5) else 'Not suitable'}<br>"
             f"Latitude: {row['decimalLatitude']:.4f}<br>"
             f"Longitude: {row['decimalLongitude']:.4f}<br>"
+            f"Elevation: {elev_text}<br>"
         )
-        folium.Marker(
+        folium.CircleMarker(
             location=[row["decimalLatitude"], row["decimalLongitude"]],
+            radius=10,
             popup=folium.Popup(popup_text, max_width=300),
-            icon=folium.Icon(color="green", icon="leaf"),
+            color=style["color"],
+            fill=True,
+            fill_color=style["color"],
+            fill_opacity=0.75,
+            weight=2,
         ).add_to(m)
+
+    legend_html = f"""
+    <div style="position: fixed; bottom: 24px; left: 24px; z-index: 9999;
+                background: white; padding: 10px 12px; border: 1px solid #ccc;
+                border-radius: 4px; font-size: 13px;">
+      <b>Confidence (threshold {confidence_threshold:.0%})</b><br>
+      <span style="color: green;">&#9679;</span> Suitable &ge; {confidence_threshold:.0%}<br>
+      <span style="color: orange;">&#9679;</span> Possible 50%–{confidence_threshold:.0%}<br>
+      <span style="color: red;">&#9679;</span> Unlikely &lt; 50%
+    </div>
+    """
+    m.get_root().html.add_child(folium.Element(legend_html))
 
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     m.save(str(output))
-    logger.info(f"Prediction map saved to: {output}")
+    logger.info(
+        "Prediction map saved to: %s (%s points, %s above threshold)",
+        output,
+        len(results_df),
+        suitable_count,
+    )
     return str(output)
 
 

@@ -1,5 +1,5 @@
 """
-Artifact registry — tracks trained model versions on disk (registry.json).
+Model version store — tracks trained artifacts on disk (registry.json).
 """
 
 import json
@@ -14,7 +14,6 @@ from src.utils.logging_config import get_logger
 
 
 def serialize_training_model(model: Any) -> Dict[str, Any]:
-    """Serialize a fitted training model into a standard artifact dict."""
     if hasattr(model, "to_artifact"):
         return model.to_artifact()
     return {
@@ -35,7 +34,7 @@ class ModelArtifactRegistry:
         self.registry_path.mkdir(parents=True, exist_ok=True)
         self.registry_file = self.registry_path / "registry.json"
         self.registry = self._load_registry()
-        self.logger = get_logger("model_artifact_registry")
+        self.logger = get_logger("model_store")
 
     def _load_registry(self) -> Dict[str, Any]:
         if self.registry_file.exists():
@@ -48,7 +47,6 @@ class ModelArtifactRegistry:
             json.dump(self.registry, f, indent=2)
 
     def _resolve_model_path(self, entry: Dict[str, Any]) -> Path:
-        """Resolve a model file path, tolerating cross-platform path drift."""
         version_id = entry["version_id"]
         candidates = [
             Path(entry["file_path"]),
@@ -104,7 +102,7 @@ class ModelArtifactRegistry:
         self.registry["models"].append(model_entry)
         self.registry["current"] = version_id
         self._save_registry()
-        self.logger.info(f"Registered model: {version_id}")
+        self.logger.info("Registered model: %s", version_id)
         return version_id
 
     def load_model(self, version_id: Optional[str] = None) -> Dict[str, Any]:
@@ -119,7 +117,7 @@ class ModelArtifactRegistry:
 
         model_file = self._resolve_model_path(entry)
         model_data = joblib.load(model_file)
-        self.logger.info(f"Loaded model: {version_id}")
+        self.logger.info("Loaded model: %s", version_id)
         return model_data
 
     def get_current_model(self) -> Optional[Dict[str, Any]]:
@@ -148,10 +146,10 @@ class ModelArtifactRegistry:
             return None
         model_file = self._resolve_model_path(entry)
         if not model_file.exists():
-            self.logger.warning(f"Model file not found: {model_file}")
+            self.logger.warning("Model file not found: %s", model_file)
             return None
         model_data = joblib.load(model_file)
-        self.logger.info(f"Loaded latest {model_name} model: {entry['version_id']}")
+        self.logger.info("Loaded latest %s model: %s", model_name, entry["version_id"])
         return model_data
 
     def set_current_model(self, version_id: str) -> None:
@@ -159,7 +157,7 @@ class ModelArtifactRegistry:
             raise ValueError(f"Model version {version_id} not found")
         self.registry["current"] = version_id
         self._save_registry()
-        self.logger.info(f"Set current model to: {version_id}")
+        self.logger.info("Set current model to: %s", version_id)
 
     def delete_model(self, version_id: str) -> None:
         for i, entry in enumerate(self.registry["models"]):
@@ -178,7 +176,7 @@ class ModelArtifactRegistry:
                         else None
                     )
                 self._save_registry()
-                self.logger.info(f"Deleted model: {version_id}")
+                self.logger.info("Deleted model: %s", version_id)
                 return
         raise ValueError(f"Model version {version_id} not found")
 
@@ -218,7 +216,3 @@ def register_model(*args, **kwargs) -> str:
 
 def load_current_model() -> Dict[str, Any]:
     return ModelArtifactRegistry().load_model()
-
-
-# Backward-compatible alias
-ModelRegistry = ModelArtifactRegistry

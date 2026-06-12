@@ -11,9 +11,11 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
-from src.model.base import prepare_training_features, select_inference_features
+from src.model.features import prepare_training_features, select_inference_features
+from src.model.registry import register
 
 
+@register("random_forest")
 class RandomForestModel:
     """Random Forest classifier with feature scaling."""
 

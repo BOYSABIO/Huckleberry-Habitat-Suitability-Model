@@ -1,8 +1,7 @@
 """
-Inference package.
+Inference package — coordinate-based workflow.
 
-- model.artifact.HabitatPredictor: score a prepared feature matrix (API path)
-- inference.pipeline.InferencePipeline: coordinates → features → score (CLI path)
+Uses model.predictor.HabitatPredictor internally after feature extraction.
 """
 
 from src.inference.pipeline import InferencePipeline

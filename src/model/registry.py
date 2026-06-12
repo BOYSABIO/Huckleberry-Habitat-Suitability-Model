@@ -1,24 +1,29 @@
 """
-Model type registry — maps names to trainable implementations.
+Model type registry.
 
-To add a new model type, register its class here.
+Register implementations with @register("name") and instantiate via create_model().
 """
 
-from typing import Any, Dict, Type
-
-from src.model.implementations.ensemble import EnsembleModel
-from src.model.implementations.random_forest import RandomForestModel
+from typing import Any, Callable, Dict, Type
 
 ModelClass = Type[Any]
 
-MODEL_REGISTRY: Dict[str, ModelClass] = {
-    "random_forest": RandomForestModel,
-    "ensemble": EnsembleModel,
-}
+MODEL_REGISTRY: Dict[str, ModelClass] = {}
+
+
+def register(name: str) -> Callable[[ModelClass], ModelClass]:
+    """Decorator to add a model class to the type catalog."""
+
+    def decorator(cls: ModelClass) -> ModelClass:
+        if name in MODEL_REGISTRY:
+            raise ValueError(f"Model '{name}' is already registered")
+        MODEL_REGISTRY[name] = cls
+        return cls
+
+    return decorator
 
 
 def get_model_class(model_type: str) -> ModelClass:
-    """Return the implementation class for a model type name."""
     if model_type not in MODEL_REGISTRY:
         supported = ", ".join(sorted(MODEL_REGISTRY))
         raise ValueError(f"Unknown model type '{model_type}'. Supported: {supported}")
@@ -26,5 +31,4 @@ def get_model_class(model_type: str) -> ModelClass:
 
 
 def create_model(model_type: str, **kwargs: Any) -> Any:
-    """Instantiate a registered model implementation."""
     return get_model_class(model_type)(**kwargs)

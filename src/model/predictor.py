@@ -1,12 +1,13 @@
 """
-Model artifact loading and scoring.
+Load saved models and score prepared feature matrices.
 
-Handles the different serialization formats produced over the project's history.
+Lives under model/ (not inference/) because loading and predict_proba are core
+model concerns. The inference package orchestrates coordinates → features → predictor.
 """
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import joblib
 import numpy as np
@@ -14,27 +15,20 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 
 from src.config.settings import Settings
-from src.model.artifact_registry import ModelArtifactRegistry
 from src.model.implementations.ensemble import EnsembleModel
 from src.model.implementations.random_forest import RandomForestModel
+from src.model.store import ModelArtifactRegistry
 
 
 @dataclass
 class PredictionResult:
-    """Single-row or batch prediction output."""
-
     predictions: np.ndarray
     probabilities: np.ndarray
     confidence_intervals: Optional[List[Tuple[float, float]]] = None
 
 
 class HabitatPredictor:
-    """
-    Score habitat suitability from a prepared feature matrix.
-
-    This is the fast path: features in → probabilities out.
-    Use inference.pipeline for lat/lon → feature extraction → score.
-    """
+    """Score habitat suitability from a prepared feature matrix (features in → scores out)."""
 
     def __init__(
         self,
@@ -61,8 +55,7 @@ class HabitatPredictor:
         if self._wrapper is not None:
             return self._wrapper.predict(prepared)
         if self._scaler is not None:
-            scaled = self._scaler.transform(prepared)
-            return self._estimator.predict(scaled)
+            return self._estimator.predict(self._scaler.transform(prepared))
         return self._estimator.predict(prepared)
 
     def predict_proba(self, features: pd.DataFrame) -> np.ndarray:
@@ -70,8 +63,7 @@ class HabitatPredictor:
         if self._wrapper is not None:
             return self._wrapper.predict_proba(prepared)
         if self._scaler is not None:
-            scaled = self._scaler.transform(prepared)
-            return self._estimator.predict_proba(scaled)
+            return self._estimator.predict_proba(self._scaler.transform(prepared))
         return self._estimator.predict_proba(prepared)
 
     def predict_with_interval(
@@ -79,7 +71,6 @@ class HabitatPredictor:
         features: pd.DataFrame,
         percentile_range: Tuple[float, float] = (2.5, 97.5),
     ) -> PredictionResult:
-        """Return class predictions, probabilities, and per-row tree-based intervals."""
         prepared = self._prepare_features(features)
         probabilities = self.predict_proba(prepared)[:, 1]
         predictions = (probabilities >= 0.5).astype(int)
@@ -88,9 +79,7 @@ class HabitatPredictor:
         rf_estimator = self._resolve_random_forest_estimator()
         if rf_estimator is not None:
             intervals = self._tree_confidence_intervals(
-                rf_estimator,
-                prepared,
-                percentile_range,
+                rf_estimator, prepared, percentile_range
             )
 
         return PredictionResult(
@@ -145,10 +134,11 @@ def _predictor_from_payload(payload: Any, version_id: str, source_path: Path) ->
 
     if isinstance(payload, dict) and payload.get("format") == "huckleberry_wrapper":
         model_type = payload.get("model_type", "random_forest")
-        if model_type == "ensemble":
-            wrapper = EnsembleModel.from_artifact(payload)
-        else:
-            wrapper = RandomForestModel.from_artifact(payload)
+        wrapper = (
+            EnsembleModel.from_artifact(payload)
+            if model_type == "ensemble"
+            else RandomForestModel.from_artifact(payload)
+        )
         return HabitatPredictor(
             feature_names=wrapper.feature_names,
             version_id=version_id,
@@ -210,35 +200,20 @@ def _predictor_from_payload(payload: Any, version_id: str, source_path: Path) ->
 
 
 def load_predictor_from_path(path: Union[str, Path]) -> HabitatPredictor:
-    """Load a predictor from a joblib file path."""
     source_path = Path(path)
     payload = _load_joblib_payload(source_path)
     return _predictor_from_payload(payload, version_id=source_path.stem, source_path=source_path)
 
 
 def load_predictor_from_settings(settings: Settings) -> HabitatPredictor:
-    """Load the active predictor based on application settings."""
     if settings.inference.model_file_path:
         return load_predictor_from_path(settings.inference.model_file_path)
 
-    registry = ModelArtifactRegistry(settings.model.model_registry_path)
-
-    if settings.model.model_name == "huckleberry_model_prod":
-        entry = registry.get_latest_entry_by_name("huckleberry_model_prod")
-        if entry is None:
-            version_id = registry.registry.get("current", "registry_current")
-            payload = registry.load_model()
-            source = registry._resolve_model_path(registry.get_model_by_id(version_id))
-        else:
-            version_id = entry["version_id"]
-            source = registry._resolve_model_path(entry)
-            payload = joblib.load(source)
-    else:
-        version_id = registry.registry.get("current", "registry_current")
-        payload = registry.load_model()
-        entry = registry.get_model_by_id(version_id) if version_id else None
-        source = registry._resolve_model_path(entry) if entry else Path("registry")
+    store = ModelArtifactRegistry(settings.model.model_registry_path)
+    version_id = store.registry.get("current", "registry_current")
+    payload = store.load_model()
+    entry = store.get_model_by_id(version_id) if version_id else None
+    source = store._resolve_model_path(entry) if entry else Path("registry")
 
     inner = payload["model"] if isinstance(payload, dict) and "model" in payload else payload
     return _predictor_from_payload(inner, version_id=version_id, source_path=source)
-

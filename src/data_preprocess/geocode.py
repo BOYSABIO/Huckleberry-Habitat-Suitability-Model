@@ -22,6 +22,9 @@ import re
 
 logger = logging.getLogger(__name__)
 
+MANUAL_GEOCODES_PATH = Path("data/resources/manual_geocodes.json")
+
+
 class Geocoder:
     """
     Handles geocoding of location data with multiple fallback strategies.
@@ -39,21 +42,6 @@ class Geocoder:
         # Initialize geocoder
         geolocator = Nominatim(user_agent="huckleberry_habitat_prediction", timeout=10)
         self.geocoder = RateLimiter(geolocator.geocode, min_delay_seconds=1)
-        
-        # Load manual geocodes
-        self.manual_geocodes = self._load_manual_geocodes()
-
-    def _load_manual_geocodes(self) -> Dict[str, Tuple[float, float]]:
-        """Load manual geocodes from JSON file."""
-        try:
-            with open('src/data_preprocess/manual_geocodes.json', 'r') as f:
-                return json.load(f)
-        except FileNotFoundError:
-            logger.warning("Manual geocodes file not found")
-            return {}
-        except Exception as e:
-            logger.error(f"Error loading manual geocodes: {e}")
-            return {}
 
     def _extract_landmark_llm(self, locality: str, county: str, 
                              state: str, country: str) -> Optional[str]:
@@ -311,18 +299,7 @@ Landmark:"""
                     else:
                         logger.info("Municipality LLM landmark extraction returned None")
         
-        # Strategy 6: Manual geocoding (before last resort)
-        # Check if we have manual geocodes for this locality or municipality
-        locality_key = row.get('locality') if pd.notnull(row.get('locality')) else None
-        municipality_key = row.get('municipality') if pd.notnull(row.get('municipality')) else None
-        
-        for key in [locality_key, municipality_key]:
-            if key and key in self.manual_geocodes:
-                lat, lon = self.manual_geocodes[key]
-                logger.info(f"Manual geocode found for '{key}': {lat}, {lon}")
-                return lat, lon, False
-        
-        # Strategy 7: LAST RESORT - County-State only (very broad)
+        # Strategy 6: LAST RESORT - County-State only (very broad)
         if pd.notnull(row['county']) and pd.notnull(row['stateProvince']):
             county_state = f"{row['county']}, {row['stateProvince']}"
             if pd.notnull(row['countryCode']):
@@ -374,21 +351,7 @@ Landmark:"""
         logger.info(f"  - Success rate: {successful_geocoding/len(result_df)*100:.1f}%")
         return result_df
 
-    def get_geocoding_summary(self, df: pd.DataFrame) -> Dict[str, Any]:
-        total_records = len(df)
-        successful_geocoding = df['decimalLatitude'].notna().sum()
-        llm_used = df.get('used_llm', pd.Series([False] * len(df))).sum()
-        summary = {
-            'total_records': total_records,
-            'successful_geocoding': successful_geocoding,
-            'failed_geocoding': total_records - successful_geocoding,
-            'success_rate': successful_geocoding / total_records * 100,
-            'llm_used_count': llm_used,
-            'llm_usage_rate': llm_used / total_records * 100
-        }
-        return summary
-
-def load_manual_geocodes(path='src/data_preprocess/manual_geocodes.json') -> Dict[str, Dict[str, float]]:
+def load_manual_geocodes(path: Optional[str] = None) -> Dict[str, Dict[str, float]]:
     """
     Load manual geocode dictionary from a JSON file.
     Args:
@@ -396,7 +359,8 @@ def load_manual_geocodes(path='src/data_preprocess/manual_geocodes.json') -> Dic
     Returns:
         Dictionary mapping locality/municipality to lat/lon
     """
-    with open(path, 'r') as f:
+    path = Path(path or MANUAL_GEOCODES_PATH)
+    with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 def apply_manual_geocodes(df: pd.DataFrame, manual_dict: Dict[str, Dict[str, float]]) -> pd.DataFrame:

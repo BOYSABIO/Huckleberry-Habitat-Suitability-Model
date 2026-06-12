@@ -1,11 +1,16 @@
 """
-Training entry point for registered model types.
+Training entry point.
+
+Picks a registered model type, runs its fit() (split / scale / train / metrics),
+and returns the fitted instance. Saving to disk is handled by training/pipeline.py
+via model/store.py.
 """
 
 from typing import Any, Dict, Tuple
 
 import pandas as pd
 
+import src.model.implementations  # noqa: F401 — register model types
 from src.config.settings import ModelSettings
 from src.model.registry import create_model
 
@@ -14,12 +19,6 @@ def train_model(
     df: pd.DataFrame,
     settings: ModelSettings,
 ) -> Tuple[Any, Dict[str, float]]:
-    """
-    Train a model using the type specified in settings.
-
-    Returns:
-        Tuple of (fitted model instance, metrics dict)
-    """
     kwargs = {}
     if settings.model_type == "random_forest":
         kwargs = {

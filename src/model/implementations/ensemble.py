@@ -12,9 +12,11 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
-from src.model.base import prepare_training_features, select_inference_features
+from src.model.features import prepare_training_features, select_inference_features
+from src.model.registry import register
 
 
+@register("ensemble")
 class EnsembleModel:
     """XGBoost + Bernoulli Naive Bayes stacking ensemble from TPOT experiments."""
 
