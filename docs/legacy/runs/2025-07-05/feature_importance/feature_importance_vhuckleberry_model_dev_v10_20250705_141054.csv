@@ -1,0 +1,13 @@
+feature,importance
+year,0.0
+season_num,0.0
+elevation,0.0
+soil_ph,0.0
+air_temperature,0.0
+precipitation_amount,0.0
+specific_humidity,0.0
+relative_humidity,0.0
+mean_vapor_pressure_deficit,0.0
+potential_evapotranspiration,0.0
+surface_downwelling_shortwave_flux_in_air,0.0
+wind_speed,0.0

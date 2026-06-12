@@ -1,0 +1,72 @@
+{
+  "note": "Archived registry entries from July 2025 dev runs. Active registry is models/registry.json at repo root.",
+  "models": [
+    {
+      "version_id": "huckleberry_model_dev_v9_20250705_132103",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-07-05T13:21:04.033758",
+      "file_path": "docs/legacy/models/huckleberry_model_dev_v9_20250705_132103.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 3,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 15,
+        "occurrence_distribution": { "1": 15 },
+        "feature_count": 12
+      }
+    },
+    {
+      "version_id": "huckleberry_model_dev_v10_20250705_141054",
+      "model_name": "huckleberry_model_dev",
+      "model_type": "random_forest",
+      "timestamp": "2025-07-05T14:10:54.596749",
+      "file_path": "docs/legacy/models/huckleberry_model_dev_v10_20250705_141054.joblib",
+      "metrics": {
+        "accuracy": 1.0,
+        "test_size": 4,
+        "train_size": 12
+      },
+      "feature_names": [
+        "year",
+        "season_num",
+        "elevation",
+        "soil_ph",
+        "air_temperature",
+        "precipitation_amount",
+        "specific_humidity",
+        "relative_humidity",
+        "mean_vapor_pressure_deficit",
+        "potential_evapotranspiration",
+        "surface_downwelling_shortwave_flux_in_air",
+        "wind_speed"
+      ],
+      "training_data_info": {
+        "total_records": 16,
+        "occurrence_distribution": { "1": 16 },
+        "feature_count": 12
+      }
+    }
+  ],
+  "notebook_era_model": {
+    "version_id": "random_forest_improved",
+    "file_path": "docs/legacy/models/random_forest_improved.joblib",
+    "description": "Trained from notebooks/Huckleberry.ipynb on HB.csv snapshot"
+  }
+}
