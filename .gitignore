@@ -58,3 +58,4 @@ logs/*.log
 # *.json
 
 archive/
+.pytest_cache/
