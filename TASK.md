@@ -12,7 +12,7 @@ Dockerize the Huckleberry model and deploy it as a REST API on the homelab. Wrap
 
 A running service at `http://homelab-ip:8000/predict` with a `/predict` POST endpoint and `/docs` Swagger page, a `docker-compose.yml` at the repo root (API + MLflow tracking server), MLflow logging wired into training and a **Production** model the API loads by URI, and a README section documenting how to deploy and query it — making the model callable as infrastructure rather than a notebook artifact.
 
-**Out of scope for this task (discuss after TASK.md is complete):** DVC for dataset versioning, Weights & Biases for experiment UI. See [After this task](#after-this-task-dvc--wandb).
+**Out of scope for this task:** automated homelab CD (merge → deploy on Proxmox), DVC, W&B. See [FUTURE_TASKS.md](FUTURE_TASKS.md). **In scope:** minimal GitHub Actions CI (tests + build checks) — see [CI (GitHub Actions)](#ci-github-actions).
 
 ## Context for Cursor
 
@@ -205,6 +205,28 @@ This task includes **MLflow** so training runs and deployed models are traceable
 
 ---
 
+## CI (GitHub Actions)
+
+Add **CI early** on this branch — do not wait until the end. **CD to the homelab stays manual in this task** (`docker compose up` on the LXC). Automated homelab deploy is a [FUTURE_TASKS.md](FUTURE_TASKS.md) follow-up.
+
+| When | Workflow step | Why |
+|------|---------------|-----|
+| **Start of branch** | `pytest tests/` on push + PR | Protects the restructured `src/` while you build the API |
+| **After Phase 2** | API smoke test (`/health`, `/predict` with fixture JSON) | Catches contract regressions |
+| **After Phase 5** | `docker build` (optional: `docker compose config`) | Image must build before homelab copy-paste deploy |
+
+**Do not put in v1 CI:** full ETL (`train` without `--dataset`), GridMET/network calls, homelab SSH deploy, MLflow server startup (too heavy/slow).
+
+**Starter layout:**
+
+```
+.github/workflows/ci.yml   # pytest on ubuntu-latest, Python 3.11
+```
+
+Expand the same file as phases complete — no need for multiple workflows yet.
+
+---
+
 ## Implementation plan
 
 Work through these phases in order. Do not move to Docker until local prediction works. Complete MLflow integration before homelab deploy so the container loads a registered Production model, not an ad-hoc `.joblib` path.
@@ -216,6 +238,18 @@ Work through these phases in order. Do not move to Docker until local prediction
 - [ ] Confirm which `.joblib` you will actually serve (see **Getting started** above)
 - [ ] Confirm that file exists under `models/` on this machine
 - [ ] Note its `feature_names` — that becomes your API contract (may differ from registry `"current"` if files are missing)
+
+### Phase 0b — Minimal CI (≈30 min)
+
+**Goal:** Every push/PR runs tests on GitHub.
+
+1. Add `.github/workflows/ci.yml`:
+   - Trigger: `push` + `pull_request` to `main`
+   - Python 3.11, install test deps (`pytest`, `numpy`, `pandas`, `scikit-learn`, `joblib`)
+   - Run `pytest tests/`
+2. Open a PR (or push to your feature branch) and confirm the check passes on GitHub.
+
+**Done when:** Actions tab shows a green CI run.
 
 ### Phase 1 — Understand the artifact (≈30 min)
 
@@ -260,6 +294,8 @@ uvicorn src.api.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Done when:** Swagger UI accepts JSON and returns a valid probability.
+
+**CI:** Add a workflow job (or step) that starts the app and hits `GET /health` + `POST /predict` with a minimal valid JSON body (use `TestClient` from `fastapi` or `httpx` in `tests/`).
 
 ### Phase 3 — Confidence interval
 
@@ -334,6 +370,8 @@ curl http://localhost:8000/health
 
 **Done when:** Container returns predictions via curl.
 
+**CI:** Add `docker build -t huckleberry-api .` to the workflow (use slim `requirements-api.txt`). Fail the job if the image does not build.
+
 ### Phase 6 — docker-compose.yml
 
 **Goal:** `docker compose up` is the one-command deploy.
@@ -346,15 +384,18 @@ curl http://localhost:8000/health
 
 **Done when:** API + MLflow UI both reachable; `/predict` uses Production model.
 
-### Phase 7 — Homelab deploy (Proxmox LXC)
+### Phase 7 — Homelab deploy (Proxmox LXC, manual)
 
 **Goal:** `curl http://<homelab-ip>:8000/predict` works from another machine.
 
-1. Create LXC (Debian/Ubuntu), install Docker
-2. Clone repo or copy image to the box
-3. Ensure model artifacts are present (`registry.json` + `.joblib`)
-4. `docker compose up -d`
-5. Open port 8000 (Proxmox firewall + LXC network)
+This phase is **manual CD** — you SSH to the box and run compose yourself. Automated “merge to `main` → homelab updates” is [FUTURE_TASKS.md](FUTURE_TASKS.md).
+
+1. Create LXC (Debian/Ubuntu), install Docker (+ Compose plugin)
+2. Clone repo on the LXC **or** copy built images (`docker save` / `docker load`)
+3. Ensure model artifacts / MLflow volumes are present
+4. `docker compose up -d --build`
+5. Open ports 8000 (API) and 5000 (MLflow UI) — Proxmox firewall + LXC network
+6. Document homelab URL and deploy steps in README
 
 **Done when:** Service reachable at homelab IP; MLflow UI reachable on homelab (port 5000 or reverse proxy).
 
@@ -388,8 +429,9 @@ train  →  TrainingPipeline  →  mlflow.log_*  →  Model Registry (Staging �
 
 - Do not wire up full `InferencePipeline` for this task (no GridMET/elevation/soil fetching in v1)
 - Do not install all of `requirements.txt` in Docker unless you want a huge image
-- Do not add DVC or W&B in this task — finish API + MLflow first
+- Do not add DVC, W&B, or automated homelab CD in this task — finish API + MLflow + manual deploy first
 - Prefer MLflow Production promotion over hand-editing `registry.json` for deploy
+- Do not block Phase 1 on a perfect CI setup — Phase 0b pytest-only is enough to start
 
 ## Debug checkpoints
 
@@ -405,21 +447,14 @@ train  →  TrainingPipeline  →  mlflow.log_*  →  Model Registry (Staging �
 
 ---
 
-## After this task (DVC + W&B)
+## After this task
 
-Complete **this** TASK.md (API + Docker + MLflow) before adding more tooling.
+Complete **this** TASK.md (Phases 0–8) before follow-ups. Track everything in [FUTURE_TASKS.md](FUTURE_TASKS.md).
 
-| Tool | When to add | Role |
-|------|-------------|------|
-| **DVC** | When re-running full ETL or sharing large datasets across machines | Version `data/raw`, processed/enriched outputs, snapshots; remote storage (S3/local); `dvc repro` for pipeline stages |
-| **W&B** | When experiment comparison UI becomes painful in MLflow alone | Optional replacement or supplement for experiment tracking — not required if MLflow meets your needs |
-
-**Suggested order:** TASK.md (Phases 0–8) → DVC for data lineage → W&B only if you want richer dashboards than MLflow UI.
-
-Track follow-ups in `FUTURE_TASKS.md`.
+**Suggested order:** TASK.md → homelab CD (automated deploy) → DVC → W&B → location API.
 
 ---
 
 ## Current step
 
-**→ Phase 0:** Set up a minimal venv, confirm which model file you have on disk, then load it in a REPL (Phase 1).
+**→ Phase 0:** Set up a minimal venv, confirm which model file you have on disk, then **Phase 0b** (minimal CI), then load the model in a REPL (Phase 1).
