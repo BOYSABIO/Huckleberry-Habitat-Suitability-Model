@@ -6,6 +6,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
+import src.model.implementations  # noqa: F401 — register model types
 from src.model.implementations.ensemble import EnsembleModel
 from src.model.implementations.random_forest import RandomForestModel
 from src.model.registry import MODEL_REGISTRY, create_model
