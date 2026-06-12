@@ -10,7 +10,9 @@ Dockerize the Huckleberry model and deploy it as a REST API on the homelab. Wrap
 
 ## Deliverable
 
-A running service at `http://homelab-ip:8000/predict` with a `/predict` POST endpoint and `/docs` Swagger page, a `docker-compose.yml` at the repo root, and a README section documenting how to deploy and query it — making the model callable as infrastructure rather than a notebook artifact.
+A running service at `http://homelab-ip:8000/predict` with a `/predict` POST endpoint and `/docs` Swagger page, a `docker-compose.yml` at the repo root (API + MLflow tracking server), MLflow logging wired into training and a **Production** model the API loads by URI, and a README section documenting how to deploy and query it — making the model callable as infrastructure rather than a notebook artifact.
+
+**Out of scope for this task (discuss after TASK.md is complete):** DVC for dataset versioning, Weights & Biases for experiment UI. See [After this task](#after-this-task-dvc--wandb).
 
 ## Context for Cursor
 
@@ -156,7 +158,8 @@ Later you’ll create `requirements-api.txt` with just these packages for Docker
 `registry.json` lists many model versions, but large `.joblib` files are **gitignored**. On a fresh clone you may only have:
 
 - `models/registry.json` (metadata — in git)
-- `models/random_forest_improved.joblib` (one legacy model — in git)
+- `models/huckleberry_model_v13_*.joblib` (current model — gitignored; train with `--dataset hb` or copy locally)
+- `docs/legacy/models/` (archived notebook-era and v9/v10 reference models)
 
 The `"current"` entry in `registry.json` may point at a file that **isn’t on this machine** (e.g. `huckleberry_model_dev_v10_...joblib` from a training run on another box).
 
@@ -165,7 +168,7 @@ The `"current"` entry in `registry.json` may point at a file that **isn’t on t
 | Situation | What to do |
 |-----------|------------|
 | You have the v10 `.joblib` on another machine | `scp` it into `models/` on the laptop |
-| You only have `random_forest_improved.joblib` | Use that file for v1 API dev; inspect its feature schema after loading (may differ from registry v10) |
+| You only have legacy models | Use `docs/legacy/models/random_forest_improved.joblib` or train v13 with `--dataset hb` |
 | You need the registry “current” model | Copy the matching `.joblib` or re-train locally |
 
 For the API task, you need **one working `.joblib`**, not the entire registry history. Document which file the API loads in your Dockerfile/README.
@@ -177,7 +180,7 @@ Imports use `from src....` — always activate the venv and run commands from th
 ```bash
 cd /path/to/Huckleberry-Habitat-Suitability-Model
 source .venv/bin/activate
-python -c "from src.models.registry import ModelRegistry; print('import ok')"
+python -c "from src.model.predictor import load_predictor_from_path; print('import ok')"
 ```
 
 ### What you can ignore for now
@@ -188,9 +191,23 @@ python -c "from src.models.registry import ModelRegistry; print('import ok')"
 
 ---
 
+## Model versioning (MLflow)
+
+This task includes **MLflow** so training runs and deployed models are traceable before the API goes to the homelab.
+
+| Concern | Today (keep during migration) | After MLflow phase |
+|---------|------------------------------|---------------------|
+| Training artifacts | `models/registry.json` + `.joblib` | Also logged to MLflow; registry remains optional fallback |
+| Which model the API serves | Hardcoded path or local `"current"` | `MLFLOW_MODEL_URI` → e.g. `models:/huckleberry-habitat/Production` |
+| Experiment history | JSON metadata only | Params, metrics, artifacts, tags in MLflow UI |
+
+**Why MLflow now (before DVC / W&B):** Docker deploy needs a clear “production model” pointer and run lineage. MLflow fits self-hosted homelab compose stacks. **DVC** (dataset blobs + pipeline reproducibility) and **W&B** (richer experiment dashboards) are follow-ups once the API + MLflow baseline works.
+
+---
+
 ## Implementation plan
 
-Work through these phases in order. Do not move to Docker until local prediction works.
+Work through these phases in order. Do not move to Docker until local prediction works. Complete MLflow integration before homelab deploy so the container loads a registered Production model, not an ad-hoc `.joblib` path.
 
 ### Phase 0 — Prerequisites
 
@@ -204,19 +221,17 @@ Work through these phases in order. Do not move to Docker until local prediction
 
 **Goal:** Load the model in a REPL and produce one prediction before writing any API code.
 
-1. Read `src/models/registry.py` — how `ModelRegistry.load_model()` works
-2. Read `src/models/pipeline.py` — `RandomForestPredictor` wraps a `StandardScaler` + sklearn `RandomForestClassifier`
+1. Read `src/model/store.py` — local `ModelArtifactRegistry` and `registry.json`
+2. Read `src/model/predictor.py` — `HabitatPredictor` wraps scaler + estimator for scoring
 3. Smoke test in Python:
 
 ```python
-from src.models.registry import ModelRegistry
 import pandas as pd
+from src.model.predictor import load_predictor_from_path
 
-registry = ModelRegistry("models/")
-data = registry.load_model()
-predictor = data["model"]
+predictor = load_predictor_from_path("models/huckleberry_model_v13_20260612_111519.joblib")
 
-# One row — use real-ish values, keys must match predictor.feature_names
+# One row — keys must match predictor.feature_names
 row = {name: 0.0 for name in predictor.feature_names}
 df = pd.DataFrame([row])
 print(predictor.predict(df))
@@ -224,7 +239,7 @@ print(predictor.predict(df))
 
 **Done when:** No errors loading or predicting.
 
-**Key detail:** Inference is not raw sklearn on JSON. Features must be scaled the same way as training (`predictor.scaler` + inner `predictor.model`).
+**Key detail:** Inference is not raw sklearn on JSON. Features must be scaled the same way as training (`HabitatPredictor` applies the saved scaler before the forest).
 
 ### Phase 2 — FastAPI app (local, no Docker)
 
@@ -234,7 +249,7 @@ print(predictor.predict(df))
 2. Create `src/api/` with:
    - `main.py` — FastAPI app, load model once at startup
    - `schemas.py` — Pydantic request/response models matching the 12 features
-   - `predictor.py` — prediction logic (reuse registry + scaling)
+   - `predictor.py` — prediction logic (reuse `HabitatPredictor` / MLflow loader from Phase 4)
 3. Implement endpoints:
    - `POST /predict` → `{"probability": float, "confidence_interval": [float, float]}`
    - `GET /health` — cheap sanity check for deploy
@@ -260,38 +275,78 @@ Document in code what the interval means (“uncertainty across trees in the for
 
 **Done when:** Response shape matches `{"probability": ..., "confidence_interval": [..., ...]}`.
 
-### Phase 4 — Dockerize
+### Phase 4 — MLflow (model tracking + registry)
+
+**Goal:** Every `train` run is logged; the API can load the **Production** registered model by URI.
+
+1. **Dependencies:** add `mlflow` to a training/API requirements file (not the full geospatial stack).
+2. **Tracking server (local / homelab):**
+   - Backend store: `mlruns/` on disk (or a volume in compose)
+   - Optional: MLflow UI on port `5000` in `docker-compose.yml`
+3. **Wire training** (`src/training/pipeline.py` or a thin `src/model/mlflow_logging.py` helper):
+   - `mlflow.start_run()` per training run
+   - Log params: `model_type`, `n_estimators`, `dataset` path/preset, `pseudo_absence_*`, git commit if available
+   - Log metrics: `accuracy`, train/test sizes
+   - Log tags: `data_version_id` from `data/versions.json`, feature list
+   - Log artifact: the `.joblib` (or serialized `HabitatPredictor` payload)
+   - Register model name: e.g. `huckleberry-habitat`
+4. **Model Registry workflow:**
+   - New runs → **Staging** (or None)
+   - Manually promote best run → **Production** in MLflow UI (or a small CLI helper)
+   - Document the promotion step in README
+5. **Keep `models/registry.json`** during migration — dual-write is fine; MLflow becomes source of truth for deploy.
+6. **API loader:** env var `MLFLOW_MODEL_URI` (default `models:/huckleberry-habitat/Production`); fallback to `load_predictor_from_path` for local dev without MLflow.
+7. **Smoke test:**
+
+```bash
+# Terminal 1 — tracking UI (if not using compose yet)
+mlflow server --backend-store-uri mlruns --host 0.0.0.0 --port 5000
+
+# Train and confirm run appears
+python -m src.main train --dataset hb
+
+# Promote run to Production in UI, then verify API loads it
+```
+
+**Done when:** A training run appears in MLflow with metrics + artifact; API loads the Production model via `MLFLOW_MODEL_URI`.
+
+### Phase 5 — Dockerize
 
 **Goal:** `docker run -p 8000:8000 huckleberry-api` works.
 
 1. `Dockerfile` at repo root:
    - `python:3.11-slim` base
    - Install slim requirements only (not full geospatial stack)
-   - `COPY` `src/` and `models/` (registry.json + current `.joblib`)
+   - `COPY` `src/`; model loaded from MLflow URI or baked-in `.joblib` for offline fallback
+   - `ENV MLFLOW_TRACKING_URI=http://mlflow:5000` (when using compose network)
    - `CMD` uvicorn on port 8000
 2. Watch out for:
-   - Paths are relative to `/app` — registry expects `models/`
-   - `.dockerignore` must **not** exclude the `.joblib` you need
+   - API container must reach MLflow tracking server on the compose network
+   - `.dockerignore` must **not** exclude `mlruns/` if you mount it as a volume
+   - For first boot without MLflow, document fallback `MODEL_PATH=models/huckleberry_model_v13_20260612_111519.joblib`
 3. Test:
 
 ```bash
 docker build -t huckleberry-api .
-docker run -p 8000:8000 huckleberry-api
+docker run -p 8000:8000 -e MLFLOW_TRACKING_URI=file:///app/mlruns huckleberry-api
 curl http://localhost:8000/health
 ```
 
 **Done when:** Container returns predictions via curl.
 
-### Phase 5 — docker-compose.yml
+### Phase 6 — docker-compose.yml
 
 **Goal:** `docker compose up` is the one-command deploy.
 
-1. `docker-compose.yml` at repo root — one `api` service, port `8000:8000`, `restart: unless-stopped`
-2. Test: `docker compose up --build`
+1. `docker-compose.yml` at repo root — services:
+   - `api` — port `8000:8000`, `restart: unless-stopped`, depends on `mlflow`
+   - `mlflow` — port `5000:5000`, volume for `mlruns/` (and optional artifact root)
+2. Shared env: `MLFLOW_TRACKING_URI=http://mlflow:5000`, `MLFLOW_MODEL_URI=models:/huckleberry-habitat/Production`
+3. Test: `docker compose up --build`
 
-**Done when:** Same as Phase 4 but via compose.
+**Done when:** API + MLflow UI both reachable; `/predict` uses Production model.
 
-### Phase 6 — Homelab deploy (Proxmox LXC)
+### Phase 7 — Homelab deploy (Proxmox LXC)
 
 **Goal:** `curl http://<homelab-ip>:8000/predict` works from another machine.
 
@@ -301,9 +356,9 @@ curl http://localhost:8000/health
 4. `docker compose up -d`
 5. Open port 8000 (Proxmox firewall + LXC network)
 
-**Done when:** Service reachable at homelab IP.
+**Done when:** Service reachable at homelab IP; MLflow UI reachable on homelab (port 5000 or reverse proxy).
 
-### Phase 7 — README handoff (Cowork)
+### Phase 8 — README handoff (Cowork)
 
 After the service works locally or on homelab, hand Cowork:
 
@@ -311,6 +366,7 @@ After the service works locally or on homelab, hand Cowork:
 - Sample request + response JSON
 - `curl` example
 - Deploy instructions (`docker compose up --build`)
+- MLflow UI URL and how to promote a run to Production
 
 ---
 
@@ -319,18 +375,21 @@ After the service works locally or on homelab, hand Cowork:
 ```
 Client  →  POST /predict (JSON features)  →  FastAPI
                                               ↓
-                                         ModelRegistry
+                              MLFLOW_MODEL_URI (Production) or local .joblib
                                               ↓
-                                         .joblib (RandomForestPredictor)
+                                         HabitatPredictor
                                               ↓
                               probability + confidence_interval  →  Client
+
+train  →  TrainingPipeline  →  mlflow.log_*  →  Model Registry (Staging → Production)
 ```
 
 ## What not to do
 
 - Do not wire up full `InferencePipeline` for this task (no GridMET/elevation/soil fetching in v1)
 - Do not install all of `requirements.txt` in Docker unless you want a huge image
-- Do not hand-edit `registry.json` — use the model marked `"current"`
+- Do not add DVC or W&B in this task — finish API + MLflow first
+- Prefer MLflow Production promotion over hand-editing `registry.json` for deploy
 
 ## Debug checkpoints
 
@@ -341,6 +400,25 @@ Client  →  POST /predict (JSON features)  →  FastAPI
 | API 500 on predict | Wrong column order or missing scaling |
 | Docker works locally, not on LXC | Model files not copied into image |
 | Can't reach homelab | Firewall/networking, not the model |
+| API loads wrong model | `MLFLOW_MODEL_URI` unset or Production stage empty — promote a run in MLflow UI |
+| MLflow connection refused | `MLFLOW_TRACKING_URI` wrong inside Docker network — use service name `mlflow` |
+
+---
+
+## After this task (DVC + W&B)
+
+Complete **this** TASK.md (API + Docker + MLflow) before adding more tooling.
+
+| Tool | When to add | Role |
+|------|-------------|------|
+| **DVC** | When re-running full ETL or sharing large datasets across machines | Version `data/raw`, processed/enriched outputs, snapshots; remote storage (S3/local); `dvc repro` for pipeline stages |
+| **W&B** | When experiment comparison UI becomes painful in MLflow alone | Optional replacement or supplement for experiment tracking — not required if MLflow meets your needs |
+
+**Suggested order:** TASK.md (Phases 0–8) → DVC for data lineage → W&B only if you want richer dashboards than MLflow UI.
+
+Track follow-ups in `FUTURE_TASKS.md`.
+
+---
 
 ## Current step
 

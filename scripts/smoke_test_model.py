@@ -8,9 +8,9 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from src.model.artifact import load_predictor_from_path
+from src.model.predictor import load_predictor_from_path
 
-MODEL_PATH = "models/random_forest_improved.joblib"
+MODEL_PATH = "models/huckleberry_model_v13_20260612_111519.joblib"
 
 
 def main() -> None:
