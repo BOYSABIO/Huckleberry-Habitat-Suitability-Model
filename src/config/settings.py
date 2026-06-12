@@ -14,6 +14,8 @@ class DataSettings:
     raw_data_path: str = "data/raw/occurrence.txt"
     processed_data_path: str = "data/processed/"
     enriched_data_path: str = "data/enriched/"
+    # When set, skip ETL and train directly from this enriched CSV
+    training_dataset_path: Optional[str] = None
     
     # Data processing parameters
     pseudo_absence_ratio: int = 3

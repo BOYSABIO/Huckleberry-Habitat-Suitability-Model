@@ -43,11 +43,10 @@ venv.bak/
 Thumbs.db
 
 # Project specific
-# Ignore large model files but keep essential ones
+# Active model artifacts (re-train or copy v13 locally; see models/registry.json)
 models/*.joblib
 models/*.pkl
-!models/random_forest_improved.joblib
-!models/registry.json  # Keep registry
+!models/registry.json
 analysis/*.csv
 analysis/*.json
 logs/*.log
@@ -57,3 +56,5 @@ logs/*.log
 # data/
 # *.csv
 # *.json
+
+archive/

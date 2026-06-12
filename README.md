@@ -2,79 +2,74 @@
 
 <p align="center">
   <img src="docs/assets/ezgif.com-video-to-gif-converter.gif" width="100%" alt="Huckleberry Detection Demo" />
-  <br><em>A comprehensive MLOps pipeline for predicting huckleberry habitat suitability using environmental data, machine learning, and geospatial analysis.</em>
 </p>
 
-## Project Overview
+Predict huckleberry (*Vaccinium membranaceum*) habitat suitability from GBIF occurrence records and environmental data (GridMET climate, elevation, soil pH). The pipeline handles ETL, pseudo-absence sampling, model training, and coordinate-based inference with maps and reports.
 
-This project analyzes and predicts huckleberry habitat suitability by combining:
-- **Historical occurrence data** from GBIF (Global Biodiversity Information Facility)
-- **Environmental variables** from GridMET (climate data)
-- **Elevation data** from Open-Elevation API
-- **Soil pH data** from SoilGrids API
-- **Machine learning models** (Random Forest and Ensemble)
+---
 
-The pipeline automatically extracts environmental data, generates pseudo-absences for balanced training, and provides both training and inference capabilities with organized outputs.
+## Quick start
 
-## Project Structure
+**Prerequisites:** Python 3.9+, [Conda](https://docs.conda.io/) (recommended), [Ollama](https://ollama.ai/) (geocoding fallback)
 
-```
-Capstone-Microsoft/
-├── data/
-│   ├── raw/                    # Original GBIF occurrence data
-│   ├── processed/              # Cleaned and processed data
-│   ├── enriched/               # Data with environmental features
-│   └── test/                   # Test datasets
-├── models/                     # Trained models and registry
-├── outputs/
-│   ├── maps/                   # HTML prediction maps
-│   ├── predictions/            # CSV prediction results
-│   ├── summaries/              # Inference analysis and reports
-│   └── feature_importance/     # Feature importance analysis (CSV + plots)
-├── src/                        # Main pipeline code
-│   ├── config/                 # Configuration management (settings + environments)
-│   ├── data_load/              # Data loading utilities
-│   ├── data_preprocess/        # Data preprocessing (cleaning, geocoding, pseudo-absences)
-│   ├── data_validation/        # Data validation and quality checks
-│   ├── features/               # Feature engineering (environmental data extraction)
-│   ├── models/                 # Model training, registry, and feature analysis
-│   ├── pipelines/              # Training and inference pipelines
-│   └── utils/                  # Utilities (logging, data versioning)
-├── notebooks/                  # Development notebooks (documentation)
-├── archive/                    # Development artifacts and legacy scripts
-│   ├── scripts/                # Development scripts (used by notebooks)
-│   └── brainstorm.ipynb        # Early exploration notebook
-├── logs/                       # Pipeline logs
-├── docs/                       # Documentation
-│   ├── assets/                 # High-quality images and GIFs
-│   ├── meeting_notes/          # Meeting documentation
-│   ├── notes/                  # Project notes
-│   ├── Project_&_Guidelines/   # Project guidelines
-│   └── references/             # Reference materials
-└── tests/                      # Test files
-```
-
-**Note**: The `archive/scripts/` folder contains development scripts used by the `notebooks/Huckleberry.ipynb` for documentation purposes. The production pipeline in `src/` is completely independent and uses its own modular architecture.
-
-## Quick Start
-
-### Prerequisites
-
-1. **Python 3.9+**
-2. **Conda or Miniconda** (recommended)
-3. **Ollama** (for local LLM capabilities)
-
-### Installation
-
-#### 1. Clone the Repository
 ```bash
 git clone <repository-url>
 cd Capstone-Microsoft
+conda env create -f environment.yml
+conda activate Capstone-Microsoft
 ```
 
-#### 2. Install Ollama
+Verify with a fast training run on the small GBIF sample:
+
 ```bash
-# Windows (using winget)
+python -m src.main train --sample
+```
+
+**Train** from the cached model-ready snapshot (skips the ~5-hour ETL):
+
+```bash
+python -m src.main train --dataset hb
+```
+
+**Infer** at one or more coordinates (opens `outputs/maps/prediction_map.html` in a browser):
+
+```bash
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-07-15
+```
+
+Use a specific trained model:
+
+```bash
+python -m src.main infer --coordinates 44.5 -116.5 --model models/your_model.joblib
+```
+
+---
+
+<details>
+<summary><strong>Installation (detailed)</strong></summary>
+
+### Python environment
+
+**Conda (recommended)**
+
+```bash
+conda env create -f environment.yml
+conda activate Capstone-Microsoft
+```
+
+**pip**
+
+```bash
+python -m venv venv
+# Windows: venv\Scripts\activate
+# macOS/Linux: source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### Ollama (geocoding fallback)
+
+```bash
+# Windows
 winget install Ollama.Ollama
 
 # macOS
@@ -84,335 +79,303 @@ brew install ollama
 curl -fsSL https://ollama.ai/install.sh | sh
 ```
 
-#### 3. Set Up Python Environment
+</details>
 
-**Option A: Using Conda (Recommended)**
-```bash
-# Create and activate conda environment
-conda env create -f environment.yml
-conda activate Capstone-Microsoft
-```
+<details>
+<summary><strong>Data layout</strong></summary>
 
-**Option B: Using pip**
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+### Active directories
 
-# Install dependencies
-pip install -r requirements.txt
-```
+| Path | Purpose |
+|------|---------|
+| `data/raw/occurrence.txt` | Full GBIF download — input for `train` |
+| `data/raw/occurrence_sample.txt` | Small subset (~15 records) — `train --sample` |
+| `data/processed/huckleberry_processed.csv` | Cleaned records before environmental enrichment |
+| `data/enriched/huckleberry_enriched.csv` | Full training dataset with all features |
+| `data/snapshots/` | Cached full datasets from the notebook era |
+| `data/resources/manual_geocodes.json` | Curated locality → coordinate lookups |
 
-#### 4. Verify Installation
-```bash
-# Test the pipeline
-python -m src.main train --environment development
-```
+### Snapshots
 
-## Data Sources
+Produced by `docs/notebooks/Huckleberry.ipynb` so you can skip re-running expensive enrichment:
 
-- **GBIF Occurrence Data**: [Vaccinium membranaceum](https://www.gbif.org/species/9060377)
-- **GridMET Climate Data**: [Microsoft Planetary Computer](https://planetarycomputer.microsoft.com/dataset/gridmet)
-- **Elevation Data**: [Open-Elevation API](https://api.open-elevation.com/)
-- **Soil Data**: [SoilGrids API](https://www.isric.org/explore/soilgrids)
+| File | Description |
+|------|-------------|
+| `snapshots/HB_PSEUDO_clean_elevation_soil.csv` | Complete enriched dataset (occurrences + pseudo-absences) |
+| `snapshots/HB.csv` | Model-ready subset — used to train the current model (v13) |
 
-## Outputs
+Relationship: `HB_PSEUDO_*` → drop nulls, parse dates → `HB.csv`.
 
-The pipeline generates several types of outputs:
+### Training presets (`--dataset`)
 
-### Training Outputs
-- **`outputs/feature_importance/`**: Feature importance analysis
-  - `feature_importance_v{version_id}.csv`: Detailed feature importance scores
-  - `feature_importance_plot_v{version_id}.png`: Visualization of top features
-- **`data/processed/`**: Cleaned and processed data
-- **`data/enriched/`**: Data with environmental features
-- **`models/`**: Trained model files and registry
+| Preset | File |
+|--------|------|
+| `hb` | `snapshots/HB.csv` — **recommended** |
+| `hb_full` | `snapshots/HB_PSEUDO_clean_elevation_soil.csv` |
 
-### Inference Outputs
-- **`outputs/predictions/`**: Prediction results
-  - `inference_predictions.csv`: All predictions with probabilities
-  - `top_predictions_YYYYMMDD_HHMMSS.csv`: High-confidence predictions only
-- **`outputs/maps/`**: Interactive prediction maps
-  - `prediction_map.html`: Folium-based interactive map
-- **`outputs/summaries/`**: Analysis and summary reports
-  - `inference_summary_YYYYMMDD_HHMMSS.json`: Comprehensive summary report
-  - `confidence_plot_YYYYMMDD_HHMMSS.png`: Confidence distribution visualization
-- **Terminal Output**: Prediction statistics and summary
+Or pass any path: `python -m src.main train --dataset path/to/file.csv`
 
-## Usage
+`--dataset` and `--sample` are mutually exclusive.
 
-### Model Configuration
+### Archive
 
-The pipeline supports multiple model types and environments:
+Notebook intermediates live in `archive/data/notebook/`. Not used by `src/`.
 
-- **Default Model**: Random Forest (recommended for most use cases)
-- **Alternative Models**: Ensemble (XGBoost + BernoulliNB) for advanced scenarios
-- **Development**: Uses test sample data, trains new versions, inference uses `random_forest_improved.joblib`
-- **Production**: Uses full dataset with production settings
-- **Testing**: Uses test datasets for validation
+</details>
 
-### Training Pipeline
-
-Train a new model with your data:
+<details>
+<summary><strong>Training</strong></summary>
 
 ```bash
-# Development environment (uses test sample data)
-python -m src.main train --environment development
+# Full ETL from raw GBIF (several hours)
+python -m src.main train
 
-# Production environment (uses full dataset)
-python -m src.main train --environment production
+# Quick smoke test (~15 records)
+python -m src.main train --sample
 
-# Testing environment
-python -m src.main train --environment testing
+# Skip ETL — train from snapshot
+python -m src.main train --dataset hb
+python -m src.main train --dataset data/snapshots/HB.csv
+
+# Model type (default: random_forest)
+python -m src.main train --dataset hb --model-type random_forest
+python -m src.main train --dataset hb --model-type ensemble
 ```
 
-**Training Process:**
-1. Loads raw GBIF occurrence data
-2. Preprocesses and cleans the data (including geocoding)
-3. Generates pseudo-absences for balanced training (using improved algorithm)
-4. Extracts environmental data (GridMET, elevation, soil)
-5. Trains Random Forest or Ensemble model
-6. Saves model to registry with versioning
-7. Outputs processed and enriched datasets
+**What happens**
 
-### Inference Pipeline
+1. Load GBIF data (or CSV when `--dataset` is set)
+2. Clean, filter, geocode
+3. Generate pseudo-absences (training from raw data only)
+4. Extract GridMET, elevation, and soil features
+5. Train and register model in `models/registry.json`
+6. Write processed/enriched CSVs and feature-importance reports
 
-Make predictions on new coordinates:
+**Model types**
+
+| Type | Notes |
+|------|-------|
+| `random_forest` | Default; fast and interpretable |
+| `ensemble` | XGBoost + BernoulliNB stacking (requires TPOT) |
+
+</details>
+
+<details>
+<summary><strong>Inference</strong></summary>
 
 ```bash
-# Basic inference (uses latest GridMET date)
-python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --environment development
+# Multiple coordinates (lat lon pairs)
+python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4
 
-# Specify a particular date for GridMET data
-python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-07-15 --environment development
+# Season / climate date for GridMET
+python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-07-15
 
-# Test different seasons
-python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-01-15 --environment development  # Winter
-python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-04-15 --environment development  # Spring
-python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-07-15 --environment development  # Summer
-python -m src.main infer --coordinates 44.5 -116.5 --gridmet-date 2020-10-15 --environment development  # Fall
+# Custom model and confidence threshold
+python -m src.main infer --coordinates 44.5 -116.5 \
+  --model models/huckleberry_model_v13.joblib \
+  --confidence-threshold 0.6
 
-# With custom confidence threshold
-python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --environment development --confidence-threshold 0.6
-
-# Skip map creation
-python -m src.main infer --coordinates 44.5 -116.5 44.6 -116.4 44.7 -116.3 --environment development --no-map
+# Skip map generation
+python -m src.main infer --coordinates 44.5 -116.5 --no-map
 ```
 
-**Inference Process:**
-1. Validates input coordinates
-2. Uses specified GridMET date or latest available date (default)
-3. Extracts environmental data for coordinates
-4. Makes predictions using trained model
-5. Generates comprehensive outputs:
-   - **Predictions**: `outputs/predictions/inference_predictions.csv` (all predictions)
-   - **Top Predictions**: `outputs/predictions/top_predictions_YYYYMMDD_HHMMSS.csv` (high-confidence only)
-   - **Interactive Map**: `outputs/maps/prediction_map.html` (if enabled)
-   - **Summary Report**: `outputs/summaries/inference_summary_YYYYMMDD_HHMMSS.json`
-   - **Confidence Plot**: `outputs/summaries/confidence_plot_YYYYMMDD_HHMMSS.png`
-6. Displays prediction statistics in terminal
+**Defaults**
 
-**Date Specification:**
-- Use `--gridmet-date YYYY-MM-DD` to specify a particular date for climate data
-- Valid date range: 1979-01-01 to approximately 2020-12-31
-- If no date specified, uses latest available GridMET data
-- Invalid dates automatically fall back to latest available data
+- Model: registry `current` → `huckleberry_model_v13` (override with `--model`)
+- GridMET date: latest available (override with `--gridmet-date YYYY-MM-DD`, range ~1979–2020)
+- Confidence threshold: `0.8` — counts as “suitable habitat” in summary stats; map shows **all** points color-coded (green / orange / red)
 
-### Environment Options
+**What happens**
 
-- **`development`**: 
-  - **Training**: Uses `occurrence_test_sample.txt` (17 records for fast development)
-  - **Inference**: Uses `random_forest_improved.joblib` (improved pre-trained model)
-  - **Settings**: Smaller models, debug logging
-- **`production`**: 
-  - **Training**: Uses `occurrence.txt` (full dataset)
-  - **Inference**: Automatically uses latest `huckleberry_model_prod_*` model from registry
-  - **Settings**: Larger models, info logging
-- **`testing`**: Uses test data, minimal models for quick testing
-- **`test_sample`**: Uses actual test sample data
+1. Validate coordinates
+2. Fetch GridMET, elevation, and soil for each point
+3. Score with `HabitatPredictor`
+4. Write CSV, optional HTML map, JSON summary, and confidence plot
 
+</details>
 
+<details>
+<summary><strong>Outputs</strong></summary>
 
-## Features
+| Location | Contents |
+|----------|----------|
+| `outputs/predictions/` | `inference_predictions.csv`, timestamped `top_predictions_*.csv` |
+| `outputs/maps/` | `prediction_map.html` — interactive Folium map |
+| `outputs/summaries/` | `inference_summary_*.json`, `confidence_plot_*.png` |
+| `outputs/feature_importance/` | CSV + plot per training run |
+| `data/processed/`, `data/enriched/` | Pipeline CSV outputs |
+| `models/` | `.joblib` artifacts + `registry.json` |
+| `logs/` | `pipeline.log` |
 
-### Environmental Variables
-- **Climate**: Temperature, precipitation, humidity, wind speed, solar radiation
-- **Elevation**: Terrain elevation data
-- **Soil**: pH levels from soil surveys
-- **Temporal**: Year, month, day, season
+</details>
 
-### Model Types
-- **Random Forest**: Fast, interpretable, good baseline
-- **Ensemble**: Combines multiple models for better performance
+<details>
+<summary><strong>Architecture</strong></summary>
 
-### Pipeline Features
-- **Modular Architecture**: Clean separation of concerns across 8 well-organized modules
-- **Configuration Management**: Environment-specific settings with validation
-- **Automatic Data Versioning**: Tracks all data transformations and lineage
-- **Model Registry**: Versioned model storage and management
-- **Comprehensive Logging**: Structured logging throughout with decorators
-- **Data Validation**: Ensures data quality at each step
-- **Error Handling**: Robust error handling and recovery mechanisms
-- **Date Specification**: Specify particular dates for GridMET climate data to test seasonal variations
-- **Health Monitoring**: Pipeline health checks and dependency validation
+`src/main.py` is a thin CLI — it parses arguments and dispatches to orchestrators.
 
-## Configuration
-
-### Environment Settings
-
-The pipeline uses environment-specific configurations with validation:
-
-```python
-# Development (src/config/environments.py)
-- Uses test sample data (occurrence_test_sample.txt)
-- Smaller model parameters (n_estimators: 100)
-- Debug logging
-- Inference uses specific model file (random_forest_improved.joblib)
-
-# Production
-- Uses full dataset (occurrence.txt)
-- Larger model parameters (n_estimators: 200)
-- Info logging
-- Inference automatically selects latest huckleberry_model_prod_* from registry
-
-# Testing
-- Uses test data
-- Minimal models for quick testing
-- Debug logging
-
-# Test Sample
-- Uses actual test sample data
-- Medium model parameters
-- Debug logging
+```
+src/
+  main.py              CLI
+  config/              Settings and presets
+  data_load/           I/O only (CSV, GBIF)
+  data_preprocess/     Cleaning, filtering, geocoding
+  data_validation/     Schema checks at pipeline boundaries
+  features/            Environmental, temporal, pseudo-absence sampling
+  training/            Training orchestration
+  inference/           Coordinate inference + maps/reports
+  model/               Registry, training, version store, predictor
+  evaluation/          Feature importance
+  utils/               Logging, data versioning
 ```
 
-### Model Settings
+### Training flow
 
-```python
-# Random Forest
-- n_estimators: 100 (dev) / 200 (prod)
-- test_size: 0.2
-- random_state: 42
-- Feature importance analysis included
-
-# Ensemble
-- Combines XGBoost with Bernoulli Naive Bayes
-- Automatic hyperparameter optimization
-- Stacking estimator for improved performance
+```mermaid
+flowchart LR
+    main[main.py] --> train[training/pipeline.py]
+    train --> io[data_load/loader.py]
+    train --> prep[data_preprocess]
+    train --> valid[data_validation]
+    train --> feat[features]
+    train --> mdl[model/trainer.py]
+    mdl --> store[model/store.py]
 ```
 
-### Data Processing Settings
+### Inference flow
 
-```python
-# Pseudo-absence Generation
-- ratio: 3 (pseudo-absences per occurrence)
-- buffer_km: 5.0 (minimum distance from real occurrences)
-- Uses improved BallTree algorithm for spatial distribution
-
-# Environmental Data
-- GridMET climate variables (8 variables)
-- Elevation from Open-Elevation API
-- Soil pH from SoilGrids API
-- Automatic date handling and validation
+```mermaid
+flowchart LR
+    main[main.py] --> infer[inference/pipeline.py]
+    infer --> feat[features/environmental.py]
+    infer --> score[model/predictor.py]
+    infer --> report[inference/reporting.py]
 ```
 
-## Testing
+### Model package
 
-Run the test suite:
+| Module | Role |
+|--------|------|
+| `model/registry.py` | `@register("name")` + `create_model()` |
+| `model/implementations/` | Algorithm classes (`fit`, `predict_proba`) |
+| `model/features.py` | Feature matrix column selection |
+| `model/trainer.py` | Training entry point |
+| `model/store.py` | `registry.json` + versioned `.joblib` files |
+| `model/predictor.py` | Load models + `HabitatPredictor` scoring |
+
+Loading and scoring live in `model/`, not `inference/`. Inference orchestrates coordinates → environmental features → predictor.
+
+| Question | Module |
+|----------|--------|
+| Given features, what's the score? | `model/predictor.py` |
+| Given lat/lon, what's the score? | `inference/pipeline.py` |
+
+### Adding a new model type
+
+1. Implement `src/model/implementations/your_model.py` with `@register("your_name")`
+2. Import it in `src/model/implementations/__init__.py`
+3. Train with `--model-type your_name`
+
+> `docs/` holds research artifacts (notebooks, notes, meeting notes). `archive/` holds legacy scripts and notebook-era data. The production pipeline in `src/` is independent.
+
+</details>
+
+<details>
+<summary><strong>Repository layout</strong></summary>
+
+```
+Capstone-Microsoft/
+├── data/                   # Raw, processed, enriched, and snapshot datasets
+├── docs/                   # Research and project documentation
+│   ├── notebooks/          # Pre-pipeline exploration (e.g. Huckleberry.ipynb)
+│   ├── notes/              # Planning and exploration write-ups
+│   ├── meeting_notes/
+│   ├── references/
+│   ├── legacy/             # Archived July 2025 runs (models + inference outputs)
+│   └── assets/             # README images and GIFs
+├── models/                 # Trained .joblib files and registry.json
+├── outputs/                # Predictions, maps, summaries, feature importance
+├── src/                    # Production pipeline (CLI, training, inference)
+├── archive/                # Legacy scripts and notebook-era intermediates
+├── logs/
+└── tests/
+```
+
+</details>
+
+<details>
+<summary><strong>Configuration</strong></summary>
+
+Settings: `src/config/settings.py` and `src/config/environments.py`.
+
+| Mode | Command | Raw input | `n_estimators` |
+|------|---------|-----------|----------------|
+| Full | `train` | `data/raw/occurrence.txt` | 200 |
+| Sample | `train --sample` | `data/raw/occurrence_sample.txt` | 50 |
+
+All runs write to the same paths: `data/processed/huckleberry_processed.csv` and `data/enriched/huckleberry_enriched.csv`.
+
+**Pseudo-absences:** ratio 3:1, 5 km buffer from real occurrences.
+
+**Environmental features:** 8 GridMET variables, elevation (Open-Elevation), soil pH (SoilGrids), temporal/season columns.
+
+</details>
+
+<details>
+<summary><strong>Testing</strong></summary>
 
 ```bash
-# Run all tests
 pytest tests/
-
-# Run specific test
 pytest tests/test_basic.py
-
-# Run with coverage
 pytest --cov=src tests/
 ```
 
-## Performance
+</details>
 
-### Model Performance
-- **Accuracy**: Typically 85-95% on test data
-- **Feature Importance**: Environmental variables ranked by importance with visualization
-- **Cross-validation**: Robust performance evaluation
-- **Model Comparison**: Compare performance across different model types
+<details>
+<summary><strong>Performance & timing</strong></summary>
 
-### Pipeline Performance
-- **Data Cleaning & Merging**: 5+ hours (depending on data size)
-- **Geocoding**: Variable time based on location complexity
-- **Pseudo-absence Generation**: 1-2 minutes with improved algorithm
-- **Environmental Extraction**: 2-5 seconds per coordinate
-- **Training**: 5-15 minutes (depending on data size)
-- **Inference**: 30-60 seconds per coordinate set
+| Stage | Typical time |
+|-------|----------------|
+| Full ETL + enrichment | ~5+ hours |
+| Train from `hb` snapshot | ~5–15 min |
+| Inference per coordinate | ~30–60 s |
+| Model accuracy (snapshot) | ~85–95% |
 
-## Troubleshooting
+Long GridMET runs can fail if Planetary Computer signed URLs expire mid-run — prefer `--dataset hb` for training unless you need a fresh ETL.
 
-### Common Issues
+</details>
 
-1. **GridMET Connection Issues**
-   ```bash
-   # Check internet connection
-   # Verify Planetary Computer access
-   # Ensure pystac-client and planetary-computer packages installed
-   ```
+<details>
+<summary><strong>Troubleshooting</strong></summary>
 
-2. **Model Loading Errors**
-   ```bash
-   # Check model file exists in models/ directory
-   # Verify model format compatibility
-   # Check registry.json for model metadata
-   ```
+| Issue | What to try |
+|-------|-------------|
+| GridMET / Planetary Computer errors | Check network; reinstall `pystac-client` and `planetary-computer`; use `--dataset hb` to skip ETL |
+| Low inference confidence | Try a different `--gridmet-date`; check elevation API (504s fill elevation with 0) |
+| Model not found | Pass `--model path/to/file.joblib` or check `models/registry.json` |
+| Geocoding failures | See `data/resources/manual_geocodes.json` |
+| Memory pressure | Use `train --sample` or `--dataset hb` |
 
-3. **Geocoding Issues**
-   ```bash
-   # Check manual_geocodes.json for fallback coordinates
-   # Verify location data quality
-   # Check rate limiting for geocoding APIs
-   ```
+Logs: `logs/pipeline.log`
 
-4. **Memory Issues**
-   ```bash
-   # Reduce batch size in environmental extraction
-   # Use smaller test dataset
-   # Check available system memory
-   ```
+</details>
 
-5. **Pseudo-absence Generation**
-   ```bash
-   # Verify coordinate data quality
-   # Check buffer distance settings
-   # Ensure sufficient spatial coverage
-   ```
+<details>
+<summary><strong>Legacy runs (July 2025)</strong></summary>
 
-### Logs
+The first successful capstone demos (v9/v10 dev models, inference on 17 coordinates, confidence plots) are archived under [`docs/legacy/`](docs/legacy/README.md) — not used by the active pipeline.
 
-Check pipeline logs in `logs/` directory:
-- `pipeline_dev.log` - Development environment
-- `pipeline_prod.log` - Production environment
-- `pipeline_test.log` - Testing environment
+Includes the notebook-era `random_forest_improved.joblib`, feature-importance CSVs, top predictions, and inference summaries from 2025-07-05.
 
-## Contributing
+</details>
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests
-5. Submit a pull request
+<details>
+<summary><strong>Data sources & acknowledgments</strong></summary>
 
-## Acknowledgments
+- [GBIF — *Vaccinium membranaceum*](https://www.gbif.org/species/9060377)
+- [Microsoft Planetary Computer — GridMET](https://planetarycomputer.microsoft.com/dataset/gridmet)
+- [Open-Elevation API](https://api.open-elevation.com/)
+- [SoilGrids](https://www.isric.org/explore/soilgrids)
 
-- **GBIF** for occurrence data
-- **Microsoft Planetary Computer** for climate data
-- **Open-Elevation** for elevation data
-- **SoilGrids** for soil data
-- **Scikit-learn** for machine learning tools
-
-## Support
-
-For questions or issues:
-1. Check the logs in `logs/` directory
-2. Review the documentation in `docs/`
-3. Open an issue on GitHub
-
+</details>

@@ -1,142 +1,81 @@
 """
-Environment-specific configuration settings.
+Pipeline configuration presets.
+
+Use ``get_settings(sample=False)`` for the full dataset (default).
+Use ``get_settings(sample=True)`` for a quick run on the small sample file.
+Use ``training_dataset=...`` to train from a pre-enriched CSV (skips ETL).
 """
 
-import os
 from typing import Optional
+
 from .settings import Settings, DataSettings, ModelSettings, InferenceSettings, LoggingSettings
 
+PROCESSED_OUTPUT = "huckleberry_processed.csv"
+ENRICHED_OUTPUT = "huckleberry_enriched.csv"
 
-def get_settings(environment: Optional[str] = None) -> Settings:
+DEFAULT_MODEL = "models/huckleberry_model_v13_20260612_111519.joblib"
+
+# Short names for --dataset (expand to paths)
+DATASET_PRESETS = {
+    "hb": "data/snapshots/HB.csv",
+    "hb_full": "data/snapshots/HB_PSEUDO_clean_elevation_soil.csv",
+}
+
+
+def resolve_dataset_path(dataset: Optional[str]) -> Optional[str]:
+    """Resolve a preset name or file path to a concrete CSV path."""
+    if dataset is None:
+        return None
+    return DATASET_PRESETS.get(dataset, dataset)
+
+
+def get_settings(
+    sample: Optional[bool] = None,
+    training_dataset: Optional[str] = None,
+    model_type: Optional[str] = None,
+) -> Settings:
     """
-    Get settings for a specific environment.
-    
+    Return pipeline settings.
+
     Args:
-        environment: Environment name ('development', 'production', 'testing', 'test_sample')
-        
-    Returns:
-        Settings object configured for the environment
+        sample: Use the small GBIF sample with full ETL (mutually exclusive with training_dataset).
+        training_dataset: Preset name (e.g. ``hb``) or path to a pre-enriched CSV; skips ETL.
+        model_type: Registered model type name (e.g. ``random_forest``, ``ensemble``).
     """
-    if environment is None:
-        environment = os.getenv('ENVIRONMENT', 'development')
-    
-    if environment == 'production':
-        return _get_production_settings()
-    elif environment == 'testing':
-        return _get_testing_settings()
-    elif environment == 'test_sample':
-        return _get_test_sample_settings()
-    else:  # development
-        return _get_development_settings()
+    if sample is None:
+        sample = False
 
+    dataset_path = resolve_dataset_path(training_dataset)
+    if sample and dataset_path:
+        raise ValueError("Use either --sample or --dataset, not both")
 
-def _get_development_settings() -> Settings:
-    """Development environment settings."""
-    return Settings(
-        data=DataSettings(
-            raw_data_path="data/raw/occurrence_test_sample.txt",  # Use test sample for fast development
-            processed_data_path="data/processed/",
-            enriched_data_path="data/enriched/",
-            pseudo_absence_ratio=3,
-            pseudo_absence_buffer_km=5.0,
-            random_seed=42
-        ),
-        model=ModelSettings(
-            model_type="random_forest",  # Default to random forest
-            n_estimators=100,
-            test_size=0.2,
-            random_state=42,
-            model_registry_path="models/",
-            model_name="huckleberry_model_dev"
-        ),
-        inference=InferenceSettings(
-            model_file_path="models/random_forest_improved.joblib"  # Use improved random forest
-        ),
-        logging=LoggingSettings(
-            level="DEBUG",
-            log_file="logs/pipeline_dev.log"
+    model_kwargs = {}
+    if model_type is not None:
+        model_kwargs["model_type"] = model_type
+
+    if dataset_path:
+        return Settings(
+            data=DataSettings(training_dataset_path=dataset_path),
+            model=ModelSettings(n_estimators=200, model_name="huckleberry_model", **model_kwargs),
+            inference=InferenceSettings(model_file_path=DEFAULT_MODEL),
+            logging=LoggingSettings(level="INFO", log_file="logs/pipeline.log"),
         )
+
+    if sample:
+        return Settings(
+            data=DataSettings(
+                raw_data_path="data/raw/occurrence_sample.txt",
+                pseudo_absence_ratio=2,
+                pseudo_absence_buffer_km=2.0,
+            ),
+            model=ModelSettings(n_estimators=50, model_name="huckleberry_model", **model_kwargs),
+            inference=InferenceSettings(model_file_path=DEFAULT_MODEL),
+            logging=LoggingSettings(level="DEBUG", log_file="logs/pipeline.log"),
+        )
+
+    return Settings(
+        data=DataSettings(raw_data_path="data/raw/occurrence.txt"),
+        model=ModelSettings(n_estimators=200, model_name="huckleberry_model", **model_kwargs),
+        inference=InferenceSettings(model_file_path=DEFAULT_MODEL),
+        logging=LoggingSettings(level="INFO", log_file="logs/pipeline.log"),
     )
-
-
-def _get_production_settings() -> Settings:
-    """Production environment settings."""
-    return Settings(
-        data=DataSettings(
-            raw_data_path="data/raw/occurrence.txt",
-            processed_data_path="data/processed/",
-            enriched_data_path="data/enriched/",
-            pseudo_absence_ratio=3,
-            pseudo_absence_buffer_km=5.0,
-            random_seed=42
-        ),
-        model=ModelSettings(
-            model_type="random_forest",  # Default to random forest for production
-            n_estimators=200,
-            test_size=0.2,
-            random_state=42,
-            model_registry_path="models/",
-            model_name="huckleberry_model_prod"
-        ),
-        inference=InferenceSettings(
-            model_file_path=None  # Will auto-select latest production model
-        ),
-        logging=LoggingSettings(
-            level="INFO",
-            log_file="logs/pipeline_prod.log"
-        )
-    )
-
-
-def _get_testing_settings() -> Settings:
-    """Testing environment settings."""
-    return Settings(
-        data=DataSettings(
-            raw_data_path="data/test/test_occurrence.txt",
-            processed_data_path="data/test/processed/",
-            enriched_data_path="data/test/enriched/",
-            pseudo_absence_ratio=2,
-            pseudo_absence_buffer_km=2.0,
-            random_seed=42
-        ),
-        model=ModelSettings(
-            model_type="random_forest",
-            n_estimators=10,  # Smaller for faster testing
-            test_size=0.3,
-            random_state=42,
-            model_registry_path="models/test/",
-            model_name="huckleberry_model_test"
-        ),
-        inference=InferenceSettings(),
-        logging=LoggingSettings(
-            level="DEBUG",
-            log_file="logs/pipeline_test.log"
-        )
-    )
-
-
-def _get_test_sample_settings() -> Settings:
-    """Test sample environment settings (uses actual test sample data)."""
-    return Settings(
-        data=DataSettings(
-            raw_data_path="data/raw/occurrence_test_sample.txt",
-            processed_data_path="data/test_sample/processed/",
-            enriched_data_path="data/test_sample/enriched/",
-            pseudo_absence_ratio=2,
-            pseudo_absence_buffer_km=2.0,
-            random_seed=42
-        ),
-        model=ModelSettings(
-            model_type="random_forest",
-            n_estimators=50,  # Medium size for test sample
-            test_size=0.2,
-            random_state=42,
-            model_registry_path="models/test_sample/",
-            model_name="huckleberry_model_test_sample"
-        ),
-        inference=InferenceSettings(),
-        logging=LoggingSettings(
-            level="DEBUG",
-            log_file="logs/pipeline_test_sample.log"
-        )
-    ) 
