@@ -22,6 +22,7 @@ from src.model.store import ModelArtifactRegistry
 
 @dataclass
 class PredictionResult:
+    """Result of a prediction."""
     predictions: np.ndarray
     probabilities: np.ndarray
     confidence_intervals: Optional[List[Tuple[float, float]]] = None
@@ -51,6 +52,7 @@ class HabitatPredictor:
         return features[self.feature_names].fillna(0)
 
     def predict(self, features: pd.DataFrame) -> np.ndarray:
+        """Predict the class of a sample."""
         prepared = self._prepare_features(features)
         if self._wrapper is not None:
             return self._wrapper.predict(prepared)
@@ -59,6 +61,7 @@ class HabitatPredictor:
         return self._estimator.predict(prepared)
 
     def predict_proba(self, features: pd.DataFrame) -> np.ndarray:
+        """Predict the probability of a sample being in the positive class."""
         prepared = self._prepare_features(features)
         if self._wrapper is not None:
             return self._wrapper.predict_proba(prepared)
@@ -71,6 +74,7 @@ class HabitatPredictor:
         features: pd.DataFrame,
         percentile_range: Tuple[float, float] = (2.5, 97.5),
     ) -> PredictionResult:
+        """Predict the class of a sample with a confidence interval."""
         prepared = self._prepare_features(features)
         probabilities = self.predict_proba(prepared)[:, 1]
         predictions = (probabilities >= 0.5).astype(int)
@@ -200,12 +204,14 @@ def _predictor_from_payload(payload: Any, version_id: str, source_path: Path) ->
 
 
 def load_predictor_from_path(path: Union[str, Path]) -> HabitatPredictor:
+    """Load model from path."""
     source_path = Path(path)
     payload = _load_joblib_payload(source_path)
     return _predictor_from_payload(payload, version_id=source_path.stem, source_path=source_path)
 
 
 def load_predictor_from_settings(settings: Settings) -> HabitatPredictor:
+    """Load model from settings."""
     if settings.inference.model_file_path:
         return load_predictor_from_path(settings.inference.model_file_path)
 
@@ -217,3 +223,41 @@ def load_predictor_from_settings(settings: Settings) -> HabitatPredictor:
 
     inner = payload["model"] if isinstance(payload, dict) and "model" in payload else payload
     return _predictor_from_payload(inner, version_id=version_id, source_path=source)
+
+
+def load_predictor_for_api(
+    model_path: Optional[str] = None,
+    registry_path: str = "models/"
+) -> HabitatPredictor:
+    """
+    Load model from path or registry.
+
+    MODEL_PATH takes priority over registry_path.
+    """
+
+    if model_path:
+        return load_predictor_from_path(model_path)
+
+    store = ModelArtifactRegistry(registry_path)
+    version_id = store.registry.get("current")
+    if not version_id:
+        raise FileNotFoundError(
+            "No model registered. Train one with:\n"
+            "python -m src.main train --dataset hb\n"
+            "Or set MODEL_PATH to a .joblib file"
+        )
+
+    entry = store.get_model_by_id(version_id)
+    if entry is None:
+        raise FileNotFoundError(f"Model version {version_id} not found")
+    try:
+        source = store._resolve_model_path(entry)
+    except FileNotFoundError as exc:
+        raise FileNotFoundError(
+            f"Registry points to '{version_id}' but file not found\n"
+            f"  {exc}\n"
+            "Train a new model with:\n"
+            "  python -m src.main train --dataset hb\n"
+            "Or set MODEL_PATH to a .joblib file"
+        )
+    return load_predictor_from_path(source)
