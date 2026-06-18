@@ -53,6 +53,17 @@ def predict(body: PredictRequest, request: Request):
     row = body.model_dump()
     features = pd.DataFrame([row])
 
-    proba = float(predictor.predict_proba(features)[0, -1])
+    result = predictor.predict_with_interval(features)
 
-    return PredictResponse(probability=proba)
+    if not result.confidence_intervals:
+        raise HTTPException(
+            status_code=500,
+            detail="Confidence interval not available for this model type",
+        )
+
+    low, high = result.confidence_intervals[0]
+
+    return PredictResponse(
+        probability=float(result.probabilities[0]),
+        confidence_interval=[low, high],
+    )

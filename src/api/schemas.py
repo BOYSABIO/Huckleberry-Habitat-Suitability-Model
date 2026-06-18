@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class PredictRequest(BaseModel):
     """Request body for the prediction endpoint."""
@@ -18,3 +19,11 @@ class PredictRequest(BaseModel):
 class PredictResponse(BaseModel):
     """Response body for the prediction endpoint."""
     probability: float = Field(ge=0.0, le=1.0, description="Probability of suitability")
+    confidence_interval: List[float] = Field(
+        min_length=2,
+        max_length=2,
+        description=(
+            "2.5th and 97.5th percentile of per-tree suitability probabilities. "
+            "Wide intervals (e.g. [0, 1]) mean trees disagree; not a classical CI."
+        ),
+    )
