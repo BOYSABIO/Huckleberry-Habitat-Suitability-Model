@@ -2,15 +2,17 @@
 Main API module for the Huckleberry Habitat API.
 """
 
+import logging
+import os
 from contextlib import asynccontextmanager
 
-import os
 import pandas as pd
 from fastapi import FastAPI, Request, HTTPException
 from src.api.schemas import PredictRequest, PredictResponse
 from src.model.predictor import load_predictor_for_api
 
 MODEL_PATH = os.getenv("MODEL_PATH")
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -19,7 +21,14 @@ async def lifespan(app: FastAPI):
     Lifespan context manager for the FastAPI app.
     """
     # STARTUP — runs once before accepting requests
+    logger.info(
+        "Loading model (MODEL_PATH=%s, MLFLOW_TRACKING_URI=%s, MLFLOW_MODEL_URI=%s)",
+        MODEL_PATH or "(not set)",
+        os.getenv("MLFLOW_TRACKING_URI") or "(not set)",
+        os.getenv("MLFLOW_MODEL_URI") or "(default)",
+    )
     app.state.predictor = load_predictor_for_api(MODEL_PATH)
+    logger.info("Model loaded: %s", app.state.predictor.version_id)
     yield
     # SHUTDOWN — optional cleanup after yield
     app.state.predictor = None
