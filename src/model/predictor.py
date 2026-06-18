@@ -76,7 +76,7 @@ class HabitatPredictor:
     ) -> PredictionResult:
         """Predict the class of a sample with a confidence interval."""
         prepared = self._prepare_features(features)
-        probabilities = self.predict_proba(prepared)[:, 1]
+        probabilities = self.predict_proba(prepared)[:, -1]
         predictions = (probabilities >= 0.5).astype(int)
 
         intervals = None
@@ -115,7 +115,7 @@ class HabitatPredictor:
         intervals: List[Tuple[float, float]] = []
         for row in matrix:
             tree_probs = np.array(
-                [tree.predict_proba(row.reshape(1, -1))[0, 1] for tree in estimator.estimators_]
+                [tree.predict_proba(row.reshape(1, -1))[0, -1] for tree in estimator.estimators_]
             )
             low, high = np.percentile(tree_probs, percentile_range)
             intervals.append((float(low), float(high)))
