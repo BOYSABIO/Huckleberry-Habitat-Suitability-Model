@@ -5,6 +5,8 @@ Lives under model/ (not inference/) because loading and predict_proba are core
 model concerns. The inference package orchestrates coordinates → features → predictor.
 """
 
+import os
+
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
@@ -18,6 +20,8 @@ from src.config.settings import Settings
 from src.model.implementations.ensemble import EnsembleModel
 from src.model.implementations.random_forest import RandomForestModel
 from src.model.store import ModelArtifactRegistry
+
+from src.model.mlflow_config import DEFAULT_MLFLOW_MODEL_URI
 
 
 @dataclass
@@ -230,13 +234,20 @@ def load_predictor_for_api(
     registry_path: str = "models/"
 ) -> HabitatPredictor:
     """
-    Load model from path or registry.
+    Load model for the API.
 
-    MODEL_PATH takes priority over registry_path.
+    Priority:
+      1. MODEL_PATH (explicit .joblib file)
+      2. MLFLOW_MODEL_URI when MLFLOW_TRACKING_URI is set
+      3. registry.json "current"
     """
 
     if model_path:
         return load_predictor_from_path(model_path)
+
+    mlflow_uri = os.getenv("MLFLOW_MODEL_URI", DEFAULT_MLFLOW_MODEL_URI)
+    if os.getenv("MLFLOW_TRACKING_URI") and mlflow_uri:
+        return _load_predictor_from_mlflow(mlflow_uri)
 
     store = ModelArtifactRegistry(registry_path)
     version_id = store.registry.get("current")
@@ -261,3 +272,30 @@ def load_predictor_for_api(
             "Or set MODEL_PATH to a .joblib file"
         )
     return load_predictor_from_path(source)
+
+
+def _load_predictor_from_mlflow(model_uri: str) -> HabitatPredictor:
+    """Download the registered model artifact and load via existing joblib loader."""
+    import mlflow
+
+    if not os.getenv("MLFLOW_TRACKING_URI"):
+        raise RuntimeError(
+            "MLFLOW_TRACKING_URI must be set when using MLFLOW_MODEL_URI "
+            "(e.g. http://localhost:5000)"
+        )
+
+    local_dir = Path(mlflow.artifacts.download_artifacts(model_uri))
+
+    # pyfunc package stores joblib as artifacts/model_file
+    joblib_path = local_dir / "artifacts" / "model_file"
+    if not joblib_path.exists():
+        joblibs = list(local_dir.rglob("*.joblib"))
+        if not joblibs:
+            raise FileNotFoundError(
+                f"No joblib file found under MLflow artifact {model_uri} (downloaded to {local_dir})"
+            )
+        joblib_path = joblibs[0]
+
+    predictor = load_predictor_from_path(joblib_path)
+    predictor.version_id = f"mlflow:{model_uri}"
+    return predictor

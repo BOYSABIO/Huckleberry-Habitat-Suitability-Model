@@ -17,6 +17,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install pytest numpy pandas "scikit-learn==1.6.1" joblib fastapi "uvicorn[standard]" httpx
+          pip install pytest httpx
+          pip install -r requirements-api.txt
+          pip install "scikit-learn==1.6.1"
       - name: Run tests
         run: pytest tests/ -v

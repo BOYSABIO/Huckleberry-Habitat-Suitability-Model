@@ -43,6 +43,14 @@ Use a specific trained model:
 python -m src.main infer --coordinates 44.5 -116.5 --model models/your_model.joblib
 ```
 
+**REST API** (feature-based scoring — see [REST API](#rest-api-feature-based) below):
+
+```bash
+pip install -r requirements-api.txt
+uvicorn src.api.main:app --reload --port 8000
+curl http://localhost:8000/health
+```
+
 ---
 
 <details>
@@ -195,6 +203,115 @@ python -m src.main infer --coordinates 44.5 -116.5 --no-map
 </details>
 
 <details>
+<summary><strong>REST API (feature-based)</strong></summary>
+
+The FastAPI service scores a single 12-feature row (same columns as `HB.csv` / `PredictRequest`). It does **not** fetch GridMET or elevation — clients supply prepared features.
+
+### Install and run
+
+```bash
+pip install -r requirements-api.txt
+uvicorn src.api.main:app --reload --port 8000
+```
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Liveness + loaded `model_version` |
+| `POST` | `/predict` | Returns `probability` and tree-based `confidence_interval` |
+
+Example:
+
+```bash
+curl -X POST http://localhost:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{
+    "year": 2020, "season_num": 2, "elevation": 1200.0, "soil_ph": 5.5,
+    "air_temperature": 15.2, "precipitation_amount": 2.1,
+    "specific_humidity": 0.008, "relative_humidity": 65.0,
+    "mean_vapor_pressure_deficit": 0.5, "potential_evapotranspiration": 3.2,
+    "surface_downwelling_shortwave_flux_in_air": 250.0, "wind_speed": 2.5
+  }'
+```
+
+### Model loading priority
+
+The API loads models in this order:
+
+1. **`MODEL_PATH`** — path to a `.joblib` file (used by CI/tests via `tests/fixtures/test_model.joblib`)
+2. **MLflow** — when `MLFLOW_TRACKING_URI` is set (see [MLflow](#mlflow-model-tracking--registry) below)
+3. **Local registry** — `models/registry.json` → `current` version
+
+</details>
+
+<details>
+<summary><strong>MLflow (model tracking & registry)</strong></summary>
+
+Training can log runs and register models in MLflow when a tracking server is configured. The API can load the production model from the registry instead of local `registry.json`.
+
+### Local tracking server (MLflow 3)
+
+Use SQLite for the backend store (the plain `mlruns/` file store is unreliable on MLflow 3):
+
+```bash
+pip install -r requirements-api.txt
+
+mlflow server \
+  --backend-store-uri sqlite:///mlflow.db \
+  --default-artifact-root ./mlartifacts \
+  --host 0.0.0.0 --port 5000
+```
+
+In another terminal:
+
+```bash
+export MLFLOW_TRACKING_URI=http://localhost:5000
+python -m src.main train --dataset hb
+```
+
+Each training run logs to experiment **`huckleberry-training`** and registers model **`huckleberry-habitat`**. If `MLFLOW_TRACKING_URI` is not set, training still updates the local `models/registry.json` only.
+
+### Promote a model for the API
+
+In the MLflow UI (http://localhost:5000):
+
+1. Open **Models** → **`huckleberry-habitat`**
+2. Select the version you want to serve
+3. Assign alias **`production`** (use **Aliases**, not legacy “Promote to Production” stages)
+
+Default URI used by the API when tracking is enabled:
+
+```text
+models:/huckleberry-habitat@production
+```
+
+### Run the API against MLflow
+
+```bash
+export MLFLOW_TRACKING_URI=http://localhost:5000
+export MLFLOW_MODEL_URI=models:/huckleberry-habitat@production   # optional; this is the default
+uvicorn src.api.main:app --reload --port 8000
+curl http://localhost:8000/health
+```
+
+`/health` should report a `model_version` like `mlflow:models:/huckleberry-habitat@production`.
+
+### Dev cleanup (optional)
+
+Remove junk experiments from early setup (does not delete registered models):
+
+```bash
+export MLFLOW_TRACKING_URI=http://localhost:5000
+python scripts/mlflow_cleanup.py --dry-run
+python scripts/mlflow_cleanup.py --delete Default lesson-1-smoke
+```
+
+Local MLflow files (`mlflow.db`, `mlartifacts/`, `mlruns/`) are gitignored.
+
+</details>
+
+<details>
 <summary><strong>Outputs</strong></summary>
 
 | Location | Contents |
@@ -262,6 +379,8 @@ flowchart LR
 | `model/trainer.py` | Training entry point |
 | `model/store.py` | `registry.json` + versioned `.joblib` files |
 | `model/predictor.py` | Load models + `HabitatPredictor` scoring |
+| `model/mlflow_logging.py` | Log training runs and register models in MLflow |
+| `model/mlflow_config.py` | Shared MLflow experiment/model naming constants |
 
 Loading and scoring live in `model/`, not `inference/`. Inference orchestrates coordinates → environmental features → predictor.
 
@@ -354,6 +473,8 @@ Long GridMET runs can fail if Planetary Computer signed URLs expire mid-run — 
 | GridMET / Planetary Computer errors | Check network; reinstall `pystac-client` and `planetary-computer`; use `--dataset hb` to skip ETL |
 | Low inference confidence | Try a different `--gridmet-date`; check elevation API (504s fill elevation with 0) |
 | Model not found | Pass `--model path/to/file.joblib` or check `models/registry.json` |
+| MLflow connection refused | Confirm server is running and `MLFLOW_TRACKING_URI` matches (e.g. `http://localhost:5000`) |
+| API loads wrong model | Check env: `MODEL_PATH` overrides MLflow; MLflow needs both `MLFLOW_TRACKING_URI` and alias `@production` |
 | Geocoding failures | See `data/resources/manual_geocodes.json` |
 | Memory pressure | Use `train --sample` or `--dataset hb` |
 
