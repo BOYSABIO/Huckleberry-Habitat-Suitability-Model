@@ -1,5 +1,6 @@
 """Training pipeline for the Huckleberry Habitat Prediction Pipeline."""
 
+import os
 from typing import Any, Dict, Optional
 
 import pandas as pd
@@ -253,6 +254,35 @@ class TrainingPipeline:
 
             model, metrics = self.train_model(df)
             version_id = self.register_model(model, metrics, df)
+
+            if os.getenv("MLFLOW_TRACKING_URI"):
+                from src.model.mlflow_logging import log_training_run
+
+                entry = self.model_registry.get_model_by_id(version_id)
+                model_path = self.model_registry._resolve_model_path(entry)
+                run_id = log_training_run(
+                    model_path=model_path,
+                    version_id=version_id,
+                    metrics=metrics,
+                    params={
+                        "model_type": self.settings.model.model_type,
+                        "n_estimators": self.settings.model.n_estimators,
+                        "test_size": self.settings.model.test_size,
+                        "random_state": self.settings.model.random_state,
+                        "dataset": input_source,
+                        "pseudo_absence_ratio": self.settings.data.pseudo_absence_ratio,
+                        "pseudo_absence_buffer_km": self.settings.data.pseudo_absence_buffer_km,
+                    },
+                    feature_names=model.feature_names,
+                    tags={"dataset_path": input_source},
+                )
+                self.logger.info("MLflow run logged: %s", run_id)
+            else:
+                self.logger.info(
+                    "MLFLOW_TRACKING_URI not set — skipping MLflow logging "
+                    "(local registry still updated)"
+                )
+
             self.generate_feature_importance_outputs(model, version_id)
 
             version_id_data = self.data_versioning.track_transformation(
