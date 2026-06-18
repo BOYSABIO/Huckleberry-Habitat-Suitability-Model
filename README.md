@@ -51,6 +51,8 @@ uvicorn src.api.main:app --reload --port 8000
 curl http://localhost:8000/health
 ```
 
+Use any Python 3.10+ environment (venv, conda, etc.) — only `requirements-api.txt` is required for the API, not the full `requirements.txt` / `environment.yml` stack.
+
 ---
 
 <details>
@@ -260,7 +262,8 @@ pip install -r requirements-api.txt
 mlflow server \
   --backend-store-uri sqlite:///mlflow.db \
   --default-artifact-root ./mlartifacts \
-  --host 0.0.0.0 --port 5000
+  --host 0.0.0.0 --port 5000 \
+  --allowed-hosts "localhost:*,127.0.0.1:*,host.docker.internal:*"
 ```
 
 In another terminal:
@@ -308,6 +311,77 @@ python scripts/mlflow_cleanup.py --delete Default lesson-1-smoke
 ```
 
 Local MLflow files (`mlflow.db`, `mlartifacts/`, `mlruns/`) are gitignored.
+
+</details>
+
+<details>
+<summary><strong>Docker (API + MLflow)</strong></summary>
+
+**Files:** `Dockerfile` builds the API image; `docker-compose.yml` orchestrates API + MLflow together. Compose uses `build: .`, so you need both — compose is not a replacement for the Dockerfile.
+
+On Windows, training logs artifact paths as `file:///C:/...`. The compose stack runs `scripts/mlflow_docker_prepare.py` before MLflow starts to rewrite those paths for Linux containers, and mounts `mlartifacts/` into the API container so it can read model files.
+
+### Recommended: docker compose
+
+Runs API and MLflow on the same Docker network (avoids `host.docker.internal` issues on Windows).
+
+**Prerequisites:** `mlflow.db`, `mlartifacts/`, and alias **`production`** on **`huckleberry-habitat`** (train with `MLFLOW_TRACKING_URI` set first).
+
+```powershell
+docker compose up --build
+```
+
+- API: http://localhost:8000/docs  
+- MLflow UI: http://localhost:5000  
+
+```powershell
+curl http://localhost:8000/health
+```
+
+First startup can take **30–60 seconds** while the API loads the model from MLflow.
+
+Stop with `Ctrl+C`, or `docker compose down` in another terminal.
+
+### Standalone `docker run` (MLflow on host)
+
+Start MLflow **before** the container, from repo root:
+
+```powershell
+mlflow server --backend-store-uri sqlite:///mlflow.db --default-artifact-root ./mlartifacts --host 0.0.0.0 --port 5000 --allowed-hosts "localhost:*,127.0.0.1:*,host.docker.internal:*"
+```
+
+Verify on the host: open http://localhost:5000
+
+Then (stop local uvicorn so port 8000 is free):
+
+```powershell
+docker build -t huckleberry-api .
+docker run --rm -p 8000:8000 huckleberry-api
+```
+
+If you see **`Connection refused`** to `host.docker.internal:5000`, MLflow is not running or not listening on `0.0.0.0:5000`.
+
+If startup **hangs** at `Waiting for application startup`, MLflow may be downloading a large artifact — wait up to a minute, or use `docker compose` instead.
+
+</details>
+
+<details>
+<summary><strong>Tests & development</strong></summary>
+
+From repo root, with Python 3.10+ and API deps installed:
+
+```bash
+pip install -r requirements-api.txt
+python -m pytest tests/ -v
+```
+
+CI runs the same tests plus `docker compose config` and `docker build`. The API tests load `tests/fixtures/test_model.joblib` via `MODEL_PATH` (see `tests/conftest.py`).
+
+Regenerate the fixture after changing the model schema or scikit-learn pin:
+
+```bash
+python scripts/build_test_fixture.py
+```
 
 </details>
 
