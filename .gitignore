@@ -59,3 +59,7 @@ logs/*.log
 
 archive/
 .pytest_cache/
+
+mlflow.db
+mlartifacts/
+mlruns/
