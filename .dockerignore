@@ -1,0 +1,28 @@
+# Git and local env
+.git 
+.venv 
+venv 
+__pycache__
+*.pyc 
+.pytest_cache
+
+# Data and outputs (not needed for API image)
+data/
+outputs/
+logs/
+docs/
+archive/
+notebooks/
+
+# MLflow local store (compose mounts these from host)
+mlflow.db
+mlartifacts/
+mlruns/
+
+# Models on disk
+models/
+
+# IDE
+.vscode/
+.idea/
+.cursor/

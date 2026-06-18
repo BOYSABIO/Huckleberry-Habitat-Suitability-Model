@@ -1,0 +1,49 @@
+# API + MLflow for local Docker (Issue #9 / #10).
+# Requires mlflow.db + mlartifacts/ from a prior train with MLFLOW_TRACKING_URI set,
+# and alias @production on huckleberry-habitat.
+#
+#   docker compose up --build
+#   curl http://localhost:8000/health
+
+services:
+  mlflow:
+    image: python:3.11-slim
+    working_dir: /data
+    volumes:
+      - ./mlflow.db:/data/mlflow.db
+      - ./mlartifacts:/data/mlartifacts
+      - ./scripts/mlflow_docker_prepare.py:/data/mlflow_docker_prepare.py:ro
+    command: >
+      sh -c "pip install -q 'mlflow>=2.0.0' &&
+      python /data/mlflow_docker_prepare.py &&
+      mlflow server
+      --backend-store-uri sqlite:////data/mlflow.db
+      --default-artifact-root /data/mlartifacts
+      --host 0.0.0.0
+      --port 5000
+      --allowed-hosts 'mlflow:5000,localhost:*,127.0.0.1:*,host.docker.internal:*'"
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=2)\"",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./mlartifacts:/data/mlartifacts
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MLFLOW_MODEL_URI: models:/huckleberry-habitat@production
+    depends_on:
+      mlflow:
+        condition: service_healthy

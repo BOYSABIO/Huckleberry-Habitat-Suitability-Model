@@ -52,6 +52,10 @@ analysis/*.json
 logs/*.log
 *.log
 
+# Generated pipeline outputs (keep directory placeholders)
+outputs/**/*
+!outputs/**/.gitkeep
+
 # Data (uncomment if you don't want to track data files)
 # data/
 # *.csv
