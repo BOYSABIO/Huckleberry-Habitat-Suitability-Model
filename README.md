@@ -321,6 +321,8 @@ Local MLflow files (`mlflow.db`, `mlartifacts/`, `mlruns/`) are gitignored.
 
 On Windows, training logs artifact paths as `file:///C:/...`. The compose stack runs `scripts/mlflow_docker_prepare.py` before MLflow starts to rewrite those paths for Linux containers, and mounts `mlartifacts/` into the API container so it can read model files.
 
+Compose uses **`--workers 1`** and a long MLflow healthcheck grace period for slow homelab hosts. For LAN access to the MLflow UI, set `MLFLOW_ALLOWED_HOSTS` in a local `.env` (see `.env.example`).
+
 ### Recommended: docker compose
 
 Runs API and MLflow on the same Docker network (avoids `host.docker.internal` issues on Windows).
@@ -362,6 +364,33 @@ docker run --rm -p 8000:8000 huckleberry-api
 If you see **`Connection refused`** to `host.docker.internal:5000`, MLflow is not running or not listening on `0.0.0.0:5000`.
 
 If startup **hangs** at `Waiting for application startup`, MLflow may be downloading a large artifact — wait up to a minute, or use `docker compose` instead.
+
+</details>
+
+<details>
+<summary><strong>Homelab deploy (Proxmox LXC)</strong></summary>
+
+Full guide: **[docs/homelab-deploy.md](docs/homelab-deploy.md)** (Issue #11).
+
+**Summary:** Create an Ubuntu/Debian LXC on Proxmox (nesting enabled, 4 GB RAM preferred), install Docker, clone this repo, copy `mlflow.db` + `mlartifacts/` from your dev machine (gitignored), then:
+
+```bash
+chmod +x scripts/homelab_start.sh
+./scripts/homelab_start.sh
+curl http://localhost:8000/health
+```
+
+**LAN:** API `http://<homelab-ip>:8000/docs` works from your network. For MLflow UI on `:5000`, add your LXC IP to `MLFLOW_ALLOWED_HOSTS` in a **local `.env`** on the server (see `.env.example` — never commit `.env` or real IPs).
+
+**Manual code update** (after merging to `main`):
+
+```bash
+./scripts/homelab_update.sh
+```
+
+**New model only:** promote `@production` in MLflow UI → `docker compose restart api`.
+
+Architecture and automated CD: [FUTURE_TASKS.md](FUTURE_TASKS.md).
 
 </details>
 
