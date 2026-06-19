@@ -209,12 +209,17 @@ python -m src.main infer --coordinates 44.5 -116.5 --no-map
 
 The FastAPI service scores a single 12-feature row (same columns as `HB.csv` / `PredictRequest`). It does **not** fetch GridMET or elevation — clients supply prepared features.
 
+Interactive docs: **`http://localhost:8000/docs`** (Swagger UI) after the server starts.
+
 ### Install and run
 
 ```bash
 pip install -r requirements-api.txt
 uvicorn src.api.main:app --reload --port 8000
+curl http://localhost:8000/health
 ```
+
+**Docker (API + MLflow):** see [Docker (API + MLflow)](#docker-api--mlflow) below, or `./scripts/homelab_start.sh` on a [homelab LXC](docs/homelab-deploy.md).
 
 ### Endpoints
 
@@ -223,7 +228,43 @@ uvicorn src.api.main:app --reload --port 8000
 | `GET` | `/health` | Liveness + loaded `model_version` |
 | `POST` | `/predict` | Returns `probability` and tree-based `confidence_interval` |
 
-Example:
+### Request / response contract
+
+**Request** — JSON object with exactly these 12 numeric fields (see `src/api/schemas.py`):
+
+`year`, `season_num`, `elevation`, `soil_ph`, `air_temperature`, `precipitation_amount`, `specific_humidity`, `relative_humidity`, `mean_vapor_pressure_deficit`, `potential_evapotranspiration`, `surface_downwelling_shortwave_flux_in_air`, `wind_speed`
+
+**Response** — JSON:
+
+```json
+{
+  "probability": 0.73,
+  "confidence_interval": [0.55, 0.89]
+}
+```
+
+- `probability` — P(suitable habitat), between 0 and 1  
+- `confidence_interval` — `[low, high]` from Random Forest tree disagreement (same idea as inference summaries)
+
+### Examples
+
+Health check:
+
+```bash
+curl http://localhost:8000/health
+```
+
+Example response:
+
+```json
+{
+  "status": "ok",
+  "model_loaded": true,
+  "model_version": "mlflow:models:/huckleberry-habitat@production"
+}
+```
+
+Predict (local or homelab — replace host as needed):
 
 ```bash
 curl -X POST http://localhost:8000/predict \
@@ -236,6 +277,17 @@ curl -X POST http://localhost:8000/predict \
     "surface_downwelling_shortwave_flux_in_air": 250.0, "wind_speed": 2.5
   }'
 ```
+
+Example response:
+
+```json
+{
+  "probability": 0.81,
+  "confidence_interval": [0.0, 1.0]
+}
+```
+
+Missing fields return **422** with validation details.
 
 ### Model loading priority
 
@@ -321,6 +373,8 @@ Local MLflow files (`mlflow.db`, `mlartifacts/`, `mlruns/`) are gitignored.
 
 On Windows, training logs artifact paths as `file:///C:/...`. The compose stack runs `scripts/mlflow_docker_prepare.py` before MLflow starts to rewrite those paths for Linux containers, and mounts `mlartifacts/` into the API container so it can read model files.
 
+Compose uses **`--workers 1`** and a long MLflow healthcheck grace period for slow homelab hosts. For LAN access to the MLflow UI, set `MLFLOW_ALLOWED_HOSTS` in a local `.env` (see `.env.example`).
+
 ### Recommended: docker compose
 
 Runs API and MLflow on the same Docker network (avoids `host.docker.internal` issues on Windows).
@@ -366,6 +420,33 @@ If startup **hangs** at `Waiting for application startup`, MLflow may be downloa
 </details>
 
 <details>
+<summary><strong>Homelab deploy (Proxmox LXC)</strong></summary>
+
+Full guide: **[docs/homelab-deploy.md](docs/homelab-deploy.md)** (Issue #11).
+
+**Summary:** Create an Ubuntu/Debian LXC on Proxmox (nesting enabled, 4 GB RAM preferred), install Docker, clone this repo, copy `mlflow.db` + `mlartifacts/` from your dev machine (gitignored), then:
+
+```bash
+chmod +x scripts/homelab_start.sh
+./scripts/homelab_start.sh
+curl http://localhost:8000/health
+```
+
+**LAN:** API `http://<homelab-ip>:8000/docs` works from your network. For MLflow UI on `:5000`, add your LXC IP to `MLFLOW_ALLOWED_HOSTS` in a **local `.env`** on the server (see `.env.example` — never commit `.env` or real IPs).
+
+**Manual code update** (after merging to `main`):
+
+```bash
+./scripts/homelab_update.sh
+```
+
+**New model only:** promote `@production` in MLflow UI → `docker compose restart api`.
+
+Architecture and automated CD: [FUTURE_TASKS.md](FUTURE_TASKS.md).
+
+</details>
+
+<details>
 <summary><strong>Tests & development</strong></summary>
 
 From repo root, with Python 3.10+ and API deps installed:
@@ -375,7 +456,7 @@ pip install -r requirements-api.txt
 python -m pytest tests/ -v
 ```
 
-CI runs the same tests plus `docker compose config` and `docker build`. The API tests load `tests/fixtures/test_model.joblib` via `MODEL_PATH` (see `tests/conftest.py`).
+CI runs the same tests plus `docker compose config` and `docker build`. The API tests in `tests/test_api.py` use FastAPI `TestClient` against `tests/fixtures/test_model.joblib` via `MODEL_PATH` (see `tests/conftest.py`) — this is what GitHub Actions runs on every PR.
 
 Regenerate the fixture after changing the model schema or scikit-learn pin:
 
