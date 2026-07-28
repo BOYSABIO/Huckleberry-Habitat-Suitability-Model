@@ -40,6 +40,7 @@ services:
       start_period: 900s
 
   api:
+    image: ghcr.io/boysabio/huckleberry-habitat-suitability-model/huckleberry-api:latest
     build: .
     ports:
       - "8000:8000"
